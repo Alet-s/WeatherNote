@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "227470966691",
+    "project_id": "weathernote-4f1c0",
+    "storage_bucket": "weathernote-4f1c0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227470966691:android:d8c682570fb21e9a492416",
+        "android_client_info": {
+          "package_name": "com.alexser.weathernote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_A9eCuqh3NLbEAj0XVxHgA8XugFpWfhs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
