@@ -5,8 +5,9 @@ plugins {
     //Google services
     id("com.google.gms.google-services")
     //Hilt
-    alias(libs.plugins.kotlinAndroidKsp)
     alias(libs.plugins.hiltAndroid)
+    //Kapt
+    id("kotlin-kapt")
 }
 
 android {
@@ -54,6 +55,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -63,7 +66,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     //Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    //Ksp
+    kapt(libs.hilt.compiler)
+    // ✅ Hilt Navigation for Compose
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     //Firebase dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))//BOM
     // When using the BoM, don't specify versions in Firebase dependencies

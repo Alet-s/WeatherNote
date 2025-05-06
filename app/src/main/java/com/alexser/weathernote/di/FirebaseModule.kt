@@ -1,5 +1,6 @@
 package com.alexser.weathernote.di
 
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,9 +10,6 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
 
-//    @Provides
-//    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
-//
-//    @Provides
-//    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 }
