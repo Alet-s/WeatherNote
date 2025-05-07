@@ -2,11 +2,11 @@ package com.alexser.weathernote.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
+import com.alexser.weathernote.presentation.components.WeatherCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -14,10 +14,20 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel,
     onLogout: () -> Unit
 ) {
+    val report by viewModel.weatherReport.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("WeatherNote Home") }
+                title = { Text("WeatherNote Home") },
+                actions = {
+                    TextButton(onClick = {
+                        viewModel.logout()
+                        onLogout()
+                    }) {
+                        Text("Logout")
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -25,18 +35,15 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            Text("Welcome to WeatherNote!", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = {
-                viewModel.logout()
-                onLogout()
-            }) {
-                Text("Logout")
-            }
+            Text(
+                "Today's Weather",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            WeatherCard(report = report)
         }
     }
 }

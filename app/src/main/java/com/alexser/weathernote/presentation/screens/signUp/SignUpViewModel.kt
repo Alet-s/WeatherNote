@@ -47,7 +47,14 @@ class SignupViewModel @Inject constructor(
             )
 
             if (result.isSuccess) {
-                onSuccess()
+                val user = result.getOrNull()
+                user?.sendEmailVerification()
+
+                _uiState.update {
+                    it.copy(isLoading = false)
+                }
+
+                onSuccess() // Navigate to "verify-email" screen
             } else {
                 _uiState.update {
                     it.copy(
