@@ -20,11 +20,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onNavigateToSignup: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -58,6 +63,16 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "No account? Register here",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .clickable { onNavigateToSignup() }
+        )
 
         Button(
             onClick = { viewModel.onLoginClick(onLoginSuccess) },

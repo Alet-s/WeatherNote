@@ -20,6 +20,15 @@ class AuthDataSource @Inject constructor(
         }
     }
 
+    suspend fun register(email: String, password: String): Result<FirebaseUser> = withContext(Dispatchers.IO) {
+        try {
+            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            Result.success(result.user!!)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun signOut() = auth.signOut()
 
     fun getCurrentUser(): FirebaseUser? = auth.currentUser
