@@ -3,7 +3,6 @@ package com.alexser.weathernote.presentation.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.AuthDataSource
-import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,24 +13,23 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val authDataSource: AuthDataSource,
-    private val getSnapshotUseCase: GetSnapshotUseCase // ✅ injected use case
+    private val getSnapshotUseCase: GetSnapshotUseCase
 ) : ViewModel() {
 
-    private val _snapshot = MutableStateFlow<Snapshot?>(null)
-    val snapshot: StateFlow<Snapshot?> = _snapshot
+    private val _uiState = MutableStateFlow<SnapshotUiState>(SnapshotUiState.Loading)
+    val uiState: StateFlow<SnapshotUiState> = _uiState
 
     init {
         fetchSnapshot()
     }
 
-    private fun fetchSnapshot(municipioId: String = "10148") {
+    fun fetchSnapshot(municipioId: String = "10188") {
         viewModelScope.launch {
+            _uiState.value = SnapshotUiState.Loading
             val result = getSnapshotUseCase(municipioId)
-            result.onSuccess { data ->
-                _snapshot.value = data
-            }.onFailure {
-                // You can add an error flow or log here
-            }
+            result
+                .onSuccess { data -> _uiState.value = SnapshotUiState.Success(data) }
+                .onFailure { e -> _uiState.value = SnapshotUiState.Error(e.localizedMessage ?: "Unknown error") }
         }
     }
 

@@ -2,7 +2,7 @@ package com.alexser.weathernote.data.remote
 
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.utils.Constants.AEMET_API_KEY
-import com.alexser.weathernote.data.remote.mapper.toSnapshot // ✅ New import
+import com.alexser.weathernote.data.remote.mapper.toSnapshot
 import javax.inject.Inject
 import kotlin.collections.first
 
