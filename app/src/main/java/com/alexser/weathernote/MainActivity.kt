@@ -34,11 +34,9 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // ✅ Use separate navControllers
-                val authNavController = rememberNavController()
-                val appNavController = rememberNavController()
-
                 if (isAuthenticated) {
+                    // ✅ Authenticated flow
+                    val navController = rememberNavController()
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
 
@@ -49,8 +47,8 @@ class MainActivity : ComponentActivity() {
                                 onDestinationClicked = { route ->
                                     scope.launch {
                                         drawerState.close()
-                                        appNavController.navigate(route) {
-                                            popUpTo(appNavController.graph.startDestinationId) {
+                                        navController.navigate(route) {
+                                            popUpTo(navController.graph.startDestinationId) {
                                                 saveState = true
                                             }
                                             launchSingleTop = true
@@ -82,7 +80,7 @@ class MainActivity : ComponentActivity() {
                                 color = MaterialTheme.colorScheme.background
                             ) {
                                 AppNavHost(
-                                    navController = appNavController,
+                                    navController = navController,
                                     onLogout = {
                                         isAuthenticated = false
                                     }
@@ -91,8 +89,11 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 } else {
+                    // ✅ Unauthenticated flow (login/signup/verify)
+                    val navController = rememberNavController()
+
                     AuthNavHost(
-                        navController = authNavController,
+                        navController = navController,
                         onAuthenticated = {
                             isAuthenticated = true
                         }
