@@ -1,0 +1,29 @@
+package com.alexser.weathernote.domain.usecase
+
+import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.domain.repository.MunicipioRepository
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class GetSavedMunicipiosUseCase @Inject constructor(
+    private val repository: MunicipioRepository
+) {
+    operator fun invoke(): Flow<List<SavedMunicipio>> = repository.getAll()
+}
+
+
+class AddMunicipioUseCase @Inject constructor(
+    private val repository: MunicipioRepository
+) {
+    suspend operator fun invoke(municipio: SavedMunicipio) {
+        repository.add(municipio)
+    }
+}
+
+class RemoveMunicipioUseCase @Inject constructor(
+    private val repository: MunicipioRepository
+) {
+    suspend operator fun invoke(municipio: SavedMunicipio) {
+        repository.remove(municipio.id)
+    }
+}

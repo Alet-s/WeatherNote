@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.alexser.weathernote.presentation.screens.home.HomeScreen
 import com.alexser.weathernote.presentation.screens.home.HomeScreenViewModel
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 
 @Composable
 fun AppNavHost(
@@ -18,11 +20,13 @@ fun AppNavHost(
             val viewModel = hiltViewModel<HomeScreenViewModel>()
             HomeScreen(
                 viewModel = viewModel,
-                onLogout = {
-                    onLogout() // ✅ triggers logout in MainActivity
-                }
+                onLogout = { onLogout() }
             )
+        }
+
+        composable("municipios") {
+            val viewModel = hiltViewModel<MunicipiosScreenViewModel>()
+            MunicipiosScreen(viewModel = viewModel)
         }
     }
 }
-

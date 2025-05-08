@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
@@ -25,11 +26,10 @@ fun DrawerContent(onDestinationClicked: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         Text("WeatherNote", fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
         DrawerItem("Inicio", Icons.Default.Home, onClick = { onDestinationClicked("home") })
-        //DrawerItem("Pronóstico", Icons.Default.CalendarToday, onClick = { onDestinationClicked("forecast") })
-        //DrawerItem("Notas", Icons.Default.Note, onClick = { onDestinationClicked("notes") })
-        //DrawerItem("Ajustes", Icons.Default.Settings, onClick = { onDestinationClicked("settings") })
+        DrawerItem("Municipios", Icons.Default.CheckCircle, onClick = { onDestinationClicked("municipios") })
     }
 }
+
 
 @Composable
 fun DrawerItem(label: String, icon: ImageVector, onClick: () -> Unit) {
