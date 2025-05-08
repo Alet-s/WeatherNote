@@ -14,6 +14,11 @@ fun SignupScreen(
     viewModel: SignupViewModel,
     onSignupSuccess: () -> Unit
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
+
     val uiState by viewModel.uiState.collectAsState()
 
     Column(

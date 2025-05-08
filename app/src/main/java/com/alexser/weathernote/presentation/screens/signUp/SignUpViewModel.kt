@@ -19,6 +19,10 @@ class SignupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SignupUiState())
     val uiState: StateFlow<SignupUiState> = _uiState
 
+    fun resetState() {
+        _uiState.value = SignupUiState()
+    }
+
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email) }
     }

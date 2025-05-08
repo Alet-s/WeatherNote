@@ -20,7 +20,9 @@ fun AuthNavHost(
     onAuthenticated: () -> Unit
 ) {
     val context = LocalContext.current
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController,
+        startDestination = "login"
+    ) {
 
         composable("login") {
             val viewModel = hiltViewModel<LoginViewModel>()

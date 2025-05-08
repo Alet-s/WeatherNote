@@ -6,7 +6,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthDataSource @Inject constructor(
     private val auth: FirebaseAuth
 ) {
@@ -28,6 +30,7 @@ class AuthDataSource @Inject constructor(
             Result.failure(e)
         }
     }
+
 
     fun signOut() = auth.signOut()
 
