@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.alexser.weathernote.presentation.components.DrawerContent
@@ -29,12 +28,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WeathernoteTheme {
-                val navController = rememberNavController()
                 var isAuthenticated by remember {
                     mutableStateOf(
                         FirebaseAuth.getInstance().currentUser?.isEmailVerified == true
                     )
                 }
+
+                // ✅ Use separate navControllers
+                val authNavController = rememberNavController()
+                val appNavController = rememberNavController()
 
                 if (isAuthenticated) {
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -47,8 +49,8 @@ class MainActivity : ComponentActivity() {
                                 onDestinationClicked = { route ->
                                     scope.launch {
                                         drawerState.close()
-                                        navController.navigate(route) {
-                                            popUpTo(navController.graph.startDestinationId) {
+                                        appNavController.navigate(route) {
+                                            popUpTo(appNavController.graph.startDestinationId) {
                                                 saveState = true
                                             }
                                             launchSingleTop = true
@@ -79,15 +81,20 @@ class MainActivity : ComponentActivity() {
                                     .padding(innerPadding),
                                 color = MaterialTheme.colorScheme.background
                             ) {
-                                AppNavHost(navController = navController)
+                                AppNavHost(
+                                    navController = appNavController,
+                                    onLogout = {
+                                        isAuthenticated = false
+                                    }
+                                )
                             }
                         }
                     }
                 } else {
                     AuthNavHost(
-                        navController = navController,
+                        navController = authNavController,
                         onAuthenticated = {
-                            isAuthenticated = true // ✅ triggers recomposition to show AppNavHost
+                            isAuthenticated = true
                         }
                     )
                 }

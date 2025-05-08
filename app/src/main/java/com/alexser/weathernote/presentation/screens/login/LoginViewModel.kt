@@ -27,6 +27,10 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(password = password) }
     }
 
+    fun resetState() {
+        _uiState.value = LoginUiState()
+    }
+
     fun onLoginClick(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

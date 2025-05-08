@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
@@ -31,6 +32,11 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToSignup: () -> Unit
 ) {
+    // ✅ Reset UI state when the screen is shown
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
+
     val uiState by viewModel.uiState.collectAsState()
 
     Column(

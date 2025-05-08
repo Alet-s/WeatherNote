@@ -9,20 +9,20 @@ import com.alexser.weathernote.presentation.screens.home.HomeScreen
 import com.alexser.weathernote.presentation.screens.home.HomeScreenViewModel
 
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(
+    navController: NavHostController,
+    onLogout: () -> Unit
+) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             val viewModel = hiltViewModel<HomeScreenViewModel>()
             HomeScreen(
                 viewModel = viewModel,
                 onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+                    onLogout() // ✅ triggers logout in MainActivity
                 }
             )
         }
-
-        // Add more protected routes here: forecast, profile, etc.
     }
 }
+
