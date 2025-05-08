@@ -1,6 +1,5 @@
 package com.alexser.weathernote.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -10,15 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.alexser.weathernote.domain.model.WeatherReport
-import com.alexser.weathernote.domain.model.WeatherType
-import com.alexser.weathernote.utils.formatAsSpanishDate
+import com.alexser.weathernote.domain.model.Snapshot
+import com.alexser.weathernote.utils.formatIsoDateAsSpanish
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun WeatherCard(
-    report: WeatherReport,
+    report: Snapshot,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -37,32 +34,41 @@ fun WeatherCard(
         ) {
             Column {
                 Text(report.city, style = MaterialTheme.typography.titleMedium)
+
                 Text(
-                    text = report.date.formatAsSpanishDate(),
+                    text = formatIsoDateAsSpanish(report.date),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
+
                 Text(
-                    text = "${report.temperature}°C",
-                    style = MaterialTheme.typography.headlineSmall
+                    text = "Max: ${report.maxTemp}°C / Min: ${report.minTemp}°C",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Text(
+                    text = report.condition,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-            WeatherIcon(type = report.weatherType)
+            // Optionally: Show icon by condition string
+            // WeatherIcon(type = mapConditionToType(report.condition))
         }
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun WeatherCardPreview() {
-    val report = WeatherReport(
-        city = "Madrid",
-        date = LocalDate.now(),
-        temperature = 27.5f,
-        weatherType = WeatherType.SUNNY
+    val report = Snapshot(
+        city = "Plasencia",
+        date = "2025-05-08T00:00:00",
+        maxTemp = 22.0f,
+        minTemp = 12.0f,
+        condition = "Muy nuboso con tormenta"
     )
-
     WeatherCard(report = report)
 }
 

@@ -1,14 +1,20 @@
 package com.alexser.weathernote.di
 
+import com.alexser.weathernote.data.repository.WeatherRepositoryImpl
+import com.alexser.weathernote.domain.repository.WeatherRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
+@Module // ✅ REQUIRED
+@InstallIn(SingletonComponent::class) // ✅ REQUIRED
 object AppModule {
 
-    //@Provides
-    //fun provideSomeHelper(): SomeHelper = SomeHelperImpl()
+    @Provides
+    @Singleton
+    fun provideWeatherRepository(
+        impl: WeatherRepositoryImpl
+    ): WeatherRepository = impl
 }

@@ -14,7 +14,7 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel,
     onLogout: () -> Unit
 ) {
-    val report by viewModel.weatherReport.collectAsState()
+    val report by viewModel.snapshot.collectAsState()
 
     Scaffold(
         topBar = {
@@ -43,7 +43,12 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            WeatherCard(report = report)
+            if (report != null) {
+                WeatherCard(report = report!!)
+            } else {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
         }
     }
 }
