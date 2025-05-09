@@ -36,3 +36,12 @@ class FindMunicipioByNameUseCase @Inject constructor(
         return firestoreDataSource.getMunicipioCodeByName(name)
     }
 }
+
+//class SuggestMunicipiosUseCase @Inject constructor(
+//    private val firestoreDataSource: FirestoreDataSource
+//) {
+//    suspend operator fun invoke(prefix: String): List<String> {
+//        return firestoreDataSource.suggestMunicipiosByPrefix(prefix)
+//    }
+//}
+

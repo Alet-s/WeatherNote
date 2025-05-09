@@ -10,6 +10,7 @@ import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
+//import com.alexser.weathernote.domain.usecase.SuggestMunicipiosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,9 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val removeMunicipioUseCase: RemoveMunicipioUseCase,
     private val getSnapshotUseCase: GetSnapshotUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
-    private val syncService: MunicipioSyncService
+    private val syncService: MunicipioSyncService,
+    //TODO: implementar sugerencias en vivo cuando escribas
+    //private val suggestMunicipiosUseCase: SuggestMunicipiosUseCase,
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -35,6 +38,10 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     private val _syncSuccess = MutableStateFlow<Boolean?>(null)
     val syncSuccess: StateFlow<Boolean?> = _syncSuccess
+
+    private val _suggestions = MutableStateFlow<List<String>>(emptyList())
+    val suggestions: StateFlow<List<String>> get() = _suggestions
+
 
     init {
         viewModelScope.launch {
@@ -103,7 +110,32 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
+//    fun onNameInputChanged(newInput: String) {
+//        viewModelScope.launch {
+//            _suggestions.value = suggestMunicipiosUseCase(newInput)
+//        }
+//    }
+
+    fun reloadFromFirestore() {
+        viewModelScope.launch {
+            try {
+                val remoteMunicipios = syncService.downloadRemoteMunicipios()
+                _municipios.value = remoteMunicipios
+
+                remoteMunicipios.forEach { municipio ->
+                    val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
+                    _snapshots.update { it + (municipio.id to snapshot) }
+                }
+            } catch (e: Exception) {
+                _syncSuccess.value = false
+            }
+        }
+    }
+
+
+
     fun resetSyncStatus() {
         _syncSuccess.value = null
     }
+
 }

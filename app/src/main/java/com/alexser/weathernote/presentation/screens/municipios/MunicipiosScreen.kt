@@ -1,10 +1,12 @@
 package com.alexser.weathernote.presentation.screens.municipios
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,13 +25,21 @@ fun MunicipiosScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val snapshots by viewModel.snapshots.collectAsState()
+    val suggestions: List<String> by viewModel.suggestions.collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
 
     var nameInput = remember { androidx.compose.runtime.mutableStateOf(TextFieldValue()) }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Saved Municipios") })
+            TopAppBar(
+                title = { Text("Saved Municipios") },
+                actions = {
+                    IconButton(onClick = { viewModel.reloadFromFirestore() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Reload")
+                    }
+                }
+            )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
@@ -45,7 +55,9 @@ fun MunicipiosScreen(
             ) {
                 OutlinedTextField(
                     value = nameInput.value,
-                    onValueChange = { nameInput.value = it },
+                    onValueChange = {
+                        nameInput.value = it
+                    },
                     label = { Text("Municipio name") },
                     modifier = Modifier.weight(1f)
                 )
@@ -57,6 +69,20 @@ fun MunicipiosScreen(
                     }
                 }) {
                     Text("Add")
+                }
+            }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                suggestions.forEach { suggestion ->
+                    Text(
+                        text = suggestion,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .clickable {
+                                nameInput.value = TextFieldValue(suggestion)
+                            }
+                    )
                 }
             }
 
