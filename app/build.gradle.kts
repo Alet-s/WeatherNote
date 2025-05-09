@@ -79,6 +79,7 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")//Analytics
     implementation("com.google.firebase:firebase-auth-ktx")//Servicio de autenticación
+    implementation("com.google.firebase:firebase-firestore-ktx:24.10.3") // or latest
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
 }

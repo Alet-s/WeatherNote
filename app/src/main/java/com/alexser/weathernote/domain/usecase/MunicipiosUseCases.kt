@@ -1,5 +1,6 @@
 package com.alexser.weathernote.domain.usecase
 
+import com.alexser.weathernote.data.firebase.FirestoreDataSource
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.repository.MunicipioRepository
 import kotlinx.coroutines.flow.Flow
@@ -25,5 +26,13 @@ class RemoveMunicipioUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(municipio: SavedMunicipio) {
         repository.remove(municipio.id)
+    }
+}
+
+class FindMunicipioByNameUseCase @Inject constructor(
+    private val firestoreDataSource: FirestoreDataSource
+) {
+    suspend operator fun invoke(name: String): String? {
+        return firestoreDataSource.getMunicipioCodeByName(name)
     }
 }

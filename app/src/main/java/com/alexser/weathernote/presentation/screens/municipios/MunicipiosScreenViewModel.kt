@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
+import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
@@ -20,7 +21,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val getSavedMunicipiosUseCase: GetSavedMunicipiosUseCase,
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val removeMunicipioUseCase: RemoveMunicipioUseCase,
-    private val getSnapshotUseCase: GetSnapshotUseCase
+    private val getSnapshotUseCase: GetSnapshotUseCase,
+    private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -30,33 +32,32 @@ class MunicipiosScreenViewModel @Inject constructor(
     val snapshots: StateFlow<Map<String, Snapshot?>> = _snapshots
 
     init {
-        loadMunicipios()
-    }
-
-    fun loadMunicipios() {
         viewModelScope.launch {
             getSavedMunicipiosUseCase().collect { savedList ->
                 _municipios.value = savedList
-                loadSnapshots(savedList)
+                savedList.forEach { municipio ->
+                    if (!_snapshots.value.containsKey(municipio.id)) {
+                        val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
+                        _snapshots.update { it + (municipio.id to snapshot) }
+                    }
+                }
             }
         }
     }
 
-
-    private fun loadSnapshots(municipios: List<SavedMunicipio>) {
-        municipios.forEach { municipio ->
-            viewModelScope.launch {
-                val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
-                _snapshots.update { it + (municipio.id to snapshot) }
-            }
-        }
-    }
-
-    fun addMunicipio(id: String, name: String) {
+    fun addMunicipioByName(name: String) {
         viewModelScope.launch {
-            val newMunicipio = SavedMunicipio(id = id, nombre = name)
-            addMunicipioUseCase(newMunicipio)
-            loadMunicipios()
+            val id = findMunicipioByNameUseCase(name)
+            if (id != null) {
+                val alreadyExists = _municipios.value.any { it.id == id }
+                if (!alreadyExists) {
+                    val newMunicipio = SavedMunicipio(id = id, nombre = name)
+                    addMunicipioUseCase(newMunicipio)
+
+                    val snapshot = getSnapshotUseCase(id).getOrNull()
+                    _snapshots.update { it + (id to snapshot) }
+                }
+            }
         }
     }
 
@@ -64,7 +65,8 @@ class MunicipiosScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val toRemove = _municipios.value.find { it.id == id } ?: return@launch
             removeMunicipioUseCase(toRemove)
-            loadMunicipios()
+            _municipios.update { it.filterNot { it.id == id } }
+            _snapshots.update { it - id }
         }
     }
 }

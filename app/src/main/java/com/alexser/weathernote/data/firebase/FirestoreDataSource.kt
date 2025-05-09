@@ -1,22 +1,21 @@
 package com.alexser.weathernote.data.firebase
 
-//class FirestoreDataSource @Inject constructor(
-//    private val firestore: FirebaseFirestore,
-//    private val auth: FirebaseAuth
-//) {
-//
-//    private fun userReportsCollection(): CollectionReference {
-//        val uid = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-//        return firestore.collection("users").document(uid).collection("weather_reports")
-//    }
-//
-//    suspend fun saveReport(report: WeatherReport) {
-//        val reportData = report.toFirebaseMap()
-//        userReportsCollection().add(reportData).await()
-//    }
-//
-//    suspend fun getReports(): List<WeatherReport> {
-//        val snapshot = userReportsCollection().get().await()
-//        return snapshot.documents.mapNotNull { it.toWeatherReport() }
-//    }
-//}
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+
+class FirestoreDataSource @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) {
+    suspend fun getMunicipioCodeByName(name: String): String? {
+        val snapshot = firestore.collection("municipios")
+            .whereEqualTo("name", name)
+            .get()
+            .await()
+
+        return snapshot.documents.firstOrNull()?.getString("code")
+    }
+
+}
