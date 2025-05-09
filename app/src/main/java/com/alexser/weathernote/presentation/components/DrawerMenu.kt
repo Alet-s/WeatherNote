@@ -1,18 +1,11 @@
 package com.alexser.weathernote.presentation.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,9 +20,9 @@ fun DrawerContent(onDestinationClicked: (String) -> Unit) {
         Text("WeatherNote", fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
         DrawerItem("Inicio", Icons.Default.Home, onClick = { onDestinationClicked("home") })
         DrawerItem("Municipios", Icons.Default.CheckCircle, onClick = { onDestinationClicked("municipios") })
+        DrawerItem("Municipios por hora", Icons.Default.MailOutline, onClick = { onDestinationClicked("municipios_horaria") })
     }
 }
-
 
 @Composable
 fun DrawerItem(label: String, icon: ImageVector, onClick: () -> Unit) {

@@ -11,4 +11,13 @@ interface AemetApi {
         @Path("municipio") municipioId: String,
         @Query("api_key") apiKey: String
     ): MetadataResponseDto
+
+    @GET("prediccion/especifica/municipio/horaria/{municipio}")
+    suspend fun getHourlyForecastMetadata(
+        @Path("municipio") municipioId: String,
+        @Query("api_key") apiKey: String
+    ): MetadataResponseDto
+
 }
+
+

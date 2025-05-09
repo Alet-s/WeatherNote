@@ -9,6 +9,8 @@ import com.alexser.weathernote.presentation.screens.home.HomeScreen
 import com.alexser.weathernote.presentation.screens.home.HomeScreenViewModel
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreen
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreenViewModel
 
 @Composable
 fun AppNavHost(
@@ -27,6 +29,11 @@ fun AppNavHost(
         composable("municipios") {
             val viewModel = hiltViewModel<MunicipiosScreenViewModel>()
             MunicipiosScreen(viewModel = viewModel)
+        }
+
+        composable("municipios_horaria") {
+            val viewModel = hiltViewModel<MunicipiosHorariaScreenViewModel>()
+            MunicipiosHorariaScreen(viewModel = viewModel)
         }
     }
 }
