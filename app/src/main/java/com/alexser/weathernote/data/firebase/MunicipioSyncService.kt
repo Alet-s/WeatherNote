@@ -36,6 +36,13 @@ class MunicipioSyncService @Inject constructor(
         }
     }
 
+    suspend fun downloadRemoteMunicipios(): List<SavedMunicipio> {
+        val uid = auth.currentUser?.uid ?: return emptyList()
+        val collection = firestore.collection("users").document(uid).collection("saved_municipios")
+        val snapshot = collection.get().await()
+        return snapshot.documents.mapNotNull { it.toObject(SavedMunicipio::class.java) }
+    }
+
 
     suspend fun clearRemoteMunicipios() {
         val collection = userCollection() ?: return

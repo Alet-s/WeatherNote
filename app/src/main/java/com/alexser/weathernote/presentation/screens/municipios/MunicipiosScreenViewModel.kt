@@ -38,6 +38,16 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            try {
+                val remoteMunicipios = syncService.downloadRemoteMunicipios()
+                remoteMunicipios.forEach { municipio ->
+                    addMunicipioUseCase(municipio)
+                }
+            } catch (e: Exception) {
+                _syncSuccess.value = false
+            }
+
+            // ✅ Only collect after Firestore sync completes
             getSavedMunicipiosUseCase().collect { savedList ->
                 _municipios.value = savedList
                 savedList.forEach { municipio ->
@@ -49,6 +59,9 @@ class MunicipiosScreenViewModel @Inject constructor(
             }
         }
     }
+
+
+
 
     fun addMunicipioByName(name: String) {
         viewModelScope.launch {
