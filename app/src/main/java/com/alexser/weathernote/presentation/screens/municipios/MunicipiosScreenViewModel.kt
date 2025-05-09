@@ -2,6 +2,7 @@ package com.alexser.weathernote.presentation.screens.municipios
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alexser.weathernote.data.firebase.MunicipioSyncService
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
@@ -22,7 +23,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val removeMunicipioUseCase: RemoveMunicipioUseCase,
     private val getSnapshotUseCase: GetSnapshotUseCase,
-    private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase
+    private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
+    private val syncService: MunicipioSyncService
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -30,6 +32,9 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     private val _snapshots = MutableStateFlow<Map<String, Snapshot?>>(emptyMap())
     val snapshots: StateFlow<Map<String, Snapshot?>> = _snapshots
+
+    private val _syncSuccess = MutableStateFlow<Boolean?>(null)
+    val syncSuccess: StateFlow<Boolean?> = _syncSuccess
 
     init {
         viewModelScope.launch {
@@ -56,6 +61,8 @@ class MunicipiosScreenViewModel @Inject constructor(
 
                     val snapshot = getSnapshotUseCase(id).getOrNull()
                     _snapshots.update { it + (id to snapshot) }
+
+                    syncMunicipiosToFirestore()
                 }
             }
         }
@@ -67,6 +74,23 @@ class MunicipiosScreenViewModel @Inject constructor(
             removeMunicipioUseCase(toRemove)
             _municipios.update { it.filterNot { it.id == id } }
             _snapshots.update { it - id }
+
+            syncMunicipiosToFirestore()
         }
+    }
+
+    fun syncMunicipiosToFirestore() {
+        viewModelScope.launch {
+            try {
+                syncService.uploadMunicipios(_municipios.value)
+                _syncSuccess.value = true
+            } catch (e: Exception) {
+                _syncSuccess.value = false
+            }
+        }
+    }
+
+    fun resetSyncStatus() {
+        _syncSuccess.value = null
     }
 }
