@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,6 +20,11 @@ fun MunicipiosHorariaScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val hourlyForecasts by viewModel.hourlyForecasts.collectAsState()
+
+    // 👇 Forzamos recarga al entrar en la pantalla
+    LaunchedEffect(Unit) {
+        viewModel.reloadForecasts()
+    }
 
     Scaffold(
         topBar = {

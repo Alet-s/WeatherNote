@@ -8,15 +8,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
+import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.presentation.components.HourlyForecastDialog
 import com.alexser.weathernote.presentation.components.WeatherCard
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,10 +26,26 @@ fun MunicipiosScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val snapshots by viewModel.snapshots.collectAsState()
-    val suggestions: List<String> by viewModel.suggestions.collectAsState(initial = emptyList())
+    val fullForecasts by viewModel.fullForecasts.collectAsState()
+    val suggestions by viewModel.suggestions.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var nameInput = remember { androidx.compose.runtime.mutableStateOf(TextFieldValue()) }
+    val selectedMunicipio = remember { mutableStateOf<SavedMunicipio?>(null) }
+
+    var nameInput by remember { mutableStateOf(TextFieldValue()) }
+
+    val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
+    val currentFullItem: HourlyForecastFullItem? =
+        selectedMunicipio.value?.let { municipio ->
+            fullForecasts[municipio.id]?.firstOrNull { it.hour == currentHour }
+        }
+
+    // Automatically trigger forecast fetch
+    LaunchedEffect(selectedMunicipio.value) {
+        selectedMunicipio.value?.let {
+            viewModel.fetchHourlyForecast(it.id)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -41,7 +58,7 @@ fun MunicipiosScreen(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -54,36 +71,32 @@ fun MunicipiosScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = nameInput.value,
-                    onValueChange = {
-                        nameInput.value = it
-                    },
+                    value = nameInput,
+                    onValueChange = { nameInput = it },
                     label = { Text("Municipio name") },
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = {
-                    if (nameInput.value.text.isNotBlank()) {
-                        viewModel.addMunicipioByName(nameInput.value.text)
-                        nameInput.value = TextFieldValue()
+                    if (nameInput.text.isNotBlank()) {
+                        viewModel.addMunicipioByName(nameInput.text)
+                        nameInput = TextFieldValue()
                     }
                 }) {
                     Text("Add")
                 }
             }
 
-            Column(modifier = Modifier.fillMaxWidth()) {
-                suggestions.forEach { suggestion ->
-                    Text(
-                        text = suggestion,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .clickable {
-                                nameInput.value = TextFieldValue(suggestion)
-                            }
-                    )
-                }
+            suggestions.forEach { suggestion ->
+                Text(
+                    text = suggestion,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .clickable {
+                            nameInput = TextFieldValue(suggestion)
+                        }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -91,7 +104,6 @@ fun MunicipiosScreen(
             LazyColumn {
                 items(municipios) { municipio ->
                     val snapshot = snapshots[municipio.id]
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -100,7 +112,12 @@ fun MunicipiosScreen(
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
                             if (snapshot != null) {
-                                WeatherCard(report = snapshot)
+                                WeatherCard(
+                                    report = snapshot,
+                                    modifier = Modifier.clickable {
+                                        selectedMunicipio.value = municipio
+                                    }
+                                )
                             } else {
                                 LinearProgressIndicator(
                                     modifier = Modifier
@@ -109,7 +126,6 @@ fun MunicipiosScreen(
                                 )
                             }
                         }
-
                         IconButton(
                             onClick = { viewModel.removeMunicipio(municipio.id) },
                             modifier = Modifier.padding(start = 8.dp)
@@ -117,6 +133,27 @@ fun MunicipiosScreen(
                             Icon(Icons.Default.Delete, contentDescription = "Delete municipio")
                         }
                     }
+                }
+            }
+
+            // 🔍 Show the dialog if full forecast for current hour is ready
+            selectedMunicipio.value?.let {
+                if (currentFullItem != null) {
+                    HourlyForecastDialog(
+                        data = currentFullItem,
+                        onDismiss = { selectedMunicipio.value = null }
+                    )
+                } else {
+                    AlertDialog(
+                        onDismissRequest = { selectedMunicipio.value = null },
+                        confirmButton = {
+                            TextButton(onClick = { selectedMunicipio.value = null }) {
+                                Text("Close")
+                            }
+                        },
+                        title = { Text("Loading forecast...") },
+                        text = { Text("Please wait while we fetch the current hour's data.") }
+                    )
                 }
             }
         }

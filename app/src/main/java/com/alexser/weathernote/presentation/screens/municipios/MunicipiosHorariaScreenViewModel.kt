@@ -10,6 +10,7 @@ import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,25 +34,30 @@ class MunicipiosHorariaScreenViewModel @Inject constructor(
 
     private fun loadAllForecasts() {
         viewModelScope.launch {
-            getSavedMunicipiosUseCase().collect { list ->
+            getSavedMunicipiosUseCase().collectLatest { list ->
                 _municipios.value = list
 
                 list.forEach { municipio ->
-                    if (!_hourlyForecasts.value.containsKey(municipio.id)) {
-                        launch {
-                            try {
-                                val rawDtos = getHourlyForecastUseCase(municipio.id)
-                                val items = rawDtos.flatMap { it.toHourlyForecastItems() }
-                                _hourlyForecasts.update { it + (municipio.id to items) }
-                            } catch (_: Exception) {
-                                // Ignorar errores por ahora
+                    launch {
+                        try {
+                            val rawDtos = getHourlyForecastUseCase(municipio.id)
+                            val items = rawDtos.flatMap { it.toHourlyForecastItems() }
+                            _hourlyForecasts.update {
+                                it + (municipio.id to items)
                             }
+                        } catch (e: Exception) {
+                            // Optional: Log error
                         }
                     }
                 }
             }
         }
-    }
 
+    }
+    //Función auxiliar para exponer loadAllForecasts() en la screen correspondiente
+    //Se utiliza para forzar la recarga de datos en cada recomposición
+    fun reloadForecasts() {
+        loadAllForecasts()
+    }
 
 }

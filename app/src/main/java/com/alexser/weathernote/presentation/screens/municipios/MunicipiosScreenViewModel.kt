@@ -3,10 +3,14 @@ package com.alexser.weathernote.presentation.screens.municipios
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.MunicipioSyncService
+import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
+import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
+import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
+import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
 import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
@@ -16,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,6 +31,7 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val getSnapshotUseCase: GetSnapshotUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val syncService: MunicipioSyncService,
+    private val getHourlyForecastUseCase: GetHourlyForecastUseCase
     //TODO: implementar sugerencias en vivo cuando escribas
     //private val suggestMunicipiosUseCase: SuggestMunicipiosUseCase,
 ) : ViewModel() {
@@ -41,6 +47,9 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     private val _suggestions = MutableStateFlow<List<String>>(emptyList())
     val suggestions: StateFlow<List<String>> get() = _suggestions
+
+    private val _hourlyFullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
+    val hourlyFullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _hourlyFullForecasts
 
 
     init {
@@ -128,6 +137,33 @@ class MunicipiosScreenViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _syncSuccess.value = false
+            }
+        }
+    }
+
+    fun loadFullForecastForMunicipio(id: String) {
+        viewModelScope.launch {
+            try {
+                val rawDtos = getHourlyForecastUseCase(id)
+                val fullItems = rawDtos.flatMap { it.toHourlyForecastFullItems() }
+                _hourlyFullForecasts.update { it + (id to fullItems) }
+            } catch (e: Exception) {
+                // You can log the error if needed
+            }
+        }
+    }
+
+    private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
+    val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
+
+    fun fetchHourlyForecast(municipioId: String) {
+        viewModelScope.launch {
+            try {
+                val rawDtos = getHourlyForecastUseCase(municipioId)
+                val items = rawDtos.flatMap { it.toHourlyForecastFullItems() }
+                _fullForecasts.update { it + (municipioId to items) }
+            } catch (e: Exception) {
+                // handle error if needed
             }
         }
     }
