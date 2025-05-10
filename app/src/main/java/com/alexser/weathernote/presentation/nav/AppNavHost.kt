@@ -22,8 +22,13 @@ fun AppNavHost(
             val viewModel = hiltViewModel<HomeScreenViewModel>()
             HomeScreen(
                 viewModel = viewModel,
-                onLogout = { onLogout() }
+                onLogout = { onLogout() },
+                onAddFavorite = { id, name ->
+                    // TODO: implement navigation or ViewModel logic to add this municipio as favorite
+                    // e.g., navigate to "municipios" and prefill with id + name, or call a shared ViewModel
+                }
             )
+
         }
 
         composable("municipios") {

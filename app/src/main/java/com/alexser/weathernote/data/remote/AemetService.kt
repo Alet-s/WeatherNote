@@ -14,7 +14,7 @@ class AemetService @Inject constructor(
     suspend fun getSnapshot(municipioId: String): Snapshot {
         val meta = aemetApi.getForecastMetadata(municipioId, AEMET_API_KEY)
         val fullData = rawApi.getDailyForecast(meta.datos)
-        return fullData.first().toSnapshot()
+        return fullData.first().toSnapshot(municipioId)
     }
 
     suspend fun getHourlyForecast(municipioId: String): List<HourlyForecastDto> {

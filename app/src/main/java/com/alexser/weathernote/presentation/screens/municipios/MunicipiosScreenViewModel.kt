@@ -129,7 +129,12 @@ class MunicipiosScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val remoteMunicipios = syncService.downloadRemoteMunicipios()
-                _municipios.value = remoteMunicipios
+
+                val current = _municipios.value
+                val merged = (current + remoteMunicipios)
+                    .distinctBy { it.id } // avoid duplicates
+
+                _municipios.value = merged
 
                 remoteMunicipios.forEach { municipio ->
                     val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
@@ -140,6 +145,7 @@ class MunicipiosScreenViewModel @Inject constructor(
             }
         }
     }
+
 
     fun loadFullForecastForMunicipio(id: String) {
         viewModelScope.launch {

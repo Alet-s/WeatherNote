@@ -59,16 +59,16 @@ fun WeatherCard(
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WeatherCardPreview() {
-    val report = Snapshot(
-        city = "Plasencia",
-        date = "2025-05-08T00:00:00",
-        maxTemp = 22.0f,
-        minTemp = 12.0f,
-        condition = "Muy nubo"
-    )
-    WeatherCard(report = report)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WeatherCardPreview() {
+//    val report = Snapshot(
+//        city = "Plasencia",
+//        date = "2025-05-08T00:00:00",
+//        maxTemp = 22.0f,
+//        minTemp = 12.0f,
+//        condition = "Muy nubo"
+//    )
+//    WeatherCard(report = report)
+//}
 
