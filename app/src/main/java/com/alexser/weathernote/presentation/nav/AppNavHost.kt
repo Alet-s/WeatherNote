@@ -5,6 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.alexser.weathernote.presentation.screens.home.HomeScreen
 import com.alexser.weathernote.presentation.screens.home.HomeScreenViewModel
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
@@ -23,18 +24,29 @@ fun AppNavHost(
             HomeScreen(
                 viewModel = viewModel,
                 onLogout = { onLogout() },
-                onAddFavorite = { id, name ->
-                    // TODO: implement navigation or ViewModel logic to add this municipio as favorite
-                    // e.g., navigate to "municipios" and prefill with id + name, or call a shared ViewModel
+                onAddFavorite = { id, name -> /* maybe used later */ },
+                onRequestAddFavorite = {
+                    navController.navigate("municipios?fromHome=true")
                 }
             )
-
         }
 
-        composable("municipios") {
+
+        composable(
+            route = "municipios?fromHome={fromHome}",
+            arguments = listOf(navArgument("fromHome") {
+                defaultValue = "false"
+            })
+        ) { backStackEntry ->
+            val fromHome = backStackEntry.arguments?.getString("fromHome") == "true"
             val viewModel = hiltViewModel<MunicipiosScreenViewModel>()
-            MunicipiosScreen(viewModel = viewModel)
+            MunicipiosScreen(
+                viewModel = viewModel,
+                showPrompt = fromHome
+            )
         }
+
+
 
         composable("municipios_horaria") {
             val viewModel = hiltViewModel<MunicipiosHorariaScreenViewModel>()

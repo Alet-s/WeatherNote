@@ -48,15 +48,13 @@ class MainActivity : ComponentActivity() {
                                     scope.launch {
                                         drawerState.close()
                                         navController.navigate(route) {
-                                            popUpTo(navController.graph.startDestinationId) {
-                                                saveState = true
-                                            }
+                                            popUpTo(0) { inclusive = true } // Clear entire back stack
                                             launchSingleTop = true
-                                            restoreState = true
                                         }
                                     }
                                 }
                             )
+
                         }
                     ) {
                         Scaffold(

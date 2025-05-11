@@ -19,6 +19,7 @@ import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -34,8 +35,6 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val syncService: MunicipioSyncService,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val homeMunicipioPreferences: HomeMunicipioPreferences
-    //TODO: implementar sugerencias en vivo cuando escribas
-    //private val suggestMunicipiosUseCase: SuggestMunicipiosUseCase,
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -53,19 +52,29 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val _hourlyFullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
     val hourlyFullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _hourlyFullForecasts
 
+    private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
+    val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
 
     init {
         viewModelScope.launch {
             try {
                 val remoteMunicipios = syncService.downloadRemoteMunicipios()
+
+                // ✅ Fetch current local municipios
+                val current = getSavedMunicipiosUseCase().first()
+                val currentIds = current.map { it.id }.toSet()
+
+                // ✅ Only add new ones
                 remoteMunicipios.forEach { municipio ->
-                    addMunicipioUseCase(municipio)
+                    if (municipio.id !in currentIds) {
+                        addMunicipioUseCase(municipio)
+                    }
                 }
             } catch (e: Exception) {
                 _syncSuccess.value = false
             }
 
-            // ✅ Only collect after Firestore sync completes
+            // ✅ Listen for updates from local DB
             getSavedMunicipiosUseCase().collect { savedList ->
                 _municipios.value = savedList
                 savedList.forEach { municipio ->
@@ -77,9 +86,6 @@ class MunicipiosScreenViewModel @Inject constructor(
             }
         }
     }
-
-
-
 
     fun addMunicipioByName(name: String) {
         viewModelScope.launch {
@@ -127,20 +133,13 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
-//    fun onNameInputChanged(newInput: String) {
-//        viewModelScope.launch {
-//            _suggestions.value = suggestMunicipiosUseCase(newInput)
-//        }
-//    }
-
     fun reloadFromFirestore() {
         viewModelScope.launch {
             try {
                 val remoteMunicipios = syncService.downloadRemoteMunicipios()
 
                 val current = _municipios.value
-                val merged = (current + remoteMunicipios)
-                    .distinctBy { it.id } // avoid duplicates
+                val merged = (current + remoteMunicipios).distinctBy { it.id }
 
                 _municipios.value = merged
 
@@ -154,6 +153,17 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
+    fun fetchHourlyForecast(municipioId: String) {
+        viewModelScope.launch {
+            try {
+                val rawDtos = getHourlyForecastUseCase(municipioId)
+                val items = rawDtos.flatMap { it.toHourlyForecastFullItems() }
+                _fullForecasts.update { it + (municipioId to items) }
+            } catch (e: Exception) {
+                // optional log
+            }
+        }
+    }
 
     fun loadFullForecastForMunicipio(id: String) {
         viewModelScope.launch {
@@ -162,30 +172,12 @@ class MunicipiosScreenViewModel @Inject constructor(
                 val fullItems = rawDtos.flatMap { it.toHourlyForecastFullItems() }
                 _hourlyFullForecasts.update { it + (id to fullItems) }
             } catch (e: Exception) {
-                // You can log the error if needed
+                // optional log
             }
         }
     }
-
-    private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
-    val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
-
-    fun fetchHourlyForecast(municipioId: String) {
-        viewModelScope.launch {
-            try {
-                val rawDtos = getHourlyForecastUseCase(municipioId)
-                val items = rawDtos.flatMap { it.toHourlyForecastFullItems() }
-                _fullForecasts.update { it + (municipioId to items) }
-            } catch (e: Exception) {
-                // handle error if needed
-            }
-        }
-    }
-
-
 
     fun resetSyncStatus() {
         _syncSuccess.value = null
     }
-
 }

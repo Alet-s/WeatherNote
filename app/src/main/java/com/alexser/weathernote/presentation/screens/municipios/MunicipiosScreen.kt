@@ -22,7 +22,8 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MunicipiosScreen(
-    viewModel: MunicipiosScreenViewModel
+    viewModel: MunicipiosScreenViewModel,
+    showPrompt: Boolean = false // ✅ New parameter to trigger onboarding prompt
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val snapshots by viewModel.snapshots.collectAsState()
@@ -31,7 +32,6 @@ fun MunicipiosScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val selectedMunicipio = remember { mutableStateOf<SavedMunicipio?>(null) }
-
     var nameInput by remember { mutableStateOf(TextFieldValue()) }
 
     val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
@@ -39,6 +39,13 @@ fun MunicipiosScreen(
         selectedMunicipio.value?.let { municipio ->
             fullForecasts[municipio.id]?.firstOrNull { it.hour == currentHour }
         }
+
+    // ✅ Show onboarding snackbar prompt once
+    LaunchedEffect(showPrompt) {
+        if (showPrompt) {
+            snackbarHostState.showSnackbar("Use the search bar to add a municipio.")
+        }
+    }
 
     // Automatically trigger forecast fetch
     LaunchedEffect(selectedMunicipio.value) {
@@ -118,7 +125,7 @@ fun MunicipiosScreen(
                                         selectedMunicipio.value = municipio
                                     },
                                     onSetHome = {
-                                        viewModel.setHomeMunicipio(municipio.id) // ✅ Triggers saving to DataStore
+                                        viewModel.setHomeMunicipio(municipio.id)
                                     }
                                 )
                             } else {
@@ -139,7 +146,6 @@ fun MunicipiosScreen(
                 }
             }
 
-            // 🔍 Show the dialog if full forecast for current hour is ready
             selectedMunicipio.value?.let {
                 if (currentFullItem != null) {
                     HourlyForecastDialog(

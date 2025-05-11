@@ -16,11 +16,13 @@ import com.alexser.weathernote.presentation.components.BigWeatherCard
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
     onLogout: () -> Unit,
-    onAddFavorite: (String, String) -> Unit
+    onAddFavorite: (String, String) -> Unit, // This remains in case you want to reuse it later
+    onRequestAddFavorite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchInput by viewModel.searchInput.collectAsState()
     val searchFieldState = remember { mutableStateOf(TextFieldValue(searchInput)) }
+    val showSearch = remember { mutableStateOf(false) }
 
     LaunchedEffect(searchInput) {
         if (searchFieldState.value.text != searchInput) {
@@ -43,12 +45,8 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            if (uiState is SnapshotUiState.Success) {
-                val snapshot = (uiState as SnapshotUiState.Success).data
-                FloatingActionButton(onClick = {
-                    viewModel.addToFavorites()
-                    onAddFavorite(snapshot.cityId, snapshot.city)
-                }) {
+            if (uiState is SnapshotUiState.Idle) {
+                FloatingActionButton(onClick = onRequestAddFavorite) {
                     Icon(Icons.Default.Add, contentDescription = "Add Favorite")
                 }
             }
@@ -61,24 +59,30 @@ fun HomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            OutlinedTextField(
-                value = searchFieldState.value,
-                onValueChange = {
-                    searchFieldState.value = it
-                    viewModel.onSearchInputChanged(it.text)
-                },
-                label = { Text("Search municipio") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = { viewModel.searchAndFetchSnapshot() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Search")
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            if (showSearch.value || uiState is SnapshotUiState.Idle) {
+                OutlinedTextField(
+                    value = searchFieldState.value,
+                    onValueChange = {
+                        searchFieldState.value = it
+                        viewModel.onSearchInputChanged(it.text)
+                    },
+                    label = { Text("Search municipio") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        viewModel.searchAndFetchSnapshot()
+                        showSearch.value = false
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Search")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             when (uiState) {
                 is SnapshotUiState.Loading -> {
@@ -86,13 +90,20 @@ fun HomeScreen(
                 }
 
                 is SnapshotUiState.Success -> {
+                    val report = (uiState as SnapshotUiState.Success).data
                     Text(
                         "Today's Weather",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    val report = (uiState as SnapshotUiState.Success).data
-                    BigWeatherCard(report = report)
+                    BigWeatherCard(
+                        report = report,
+                        onEditClick = { showSearch.value = true },
+                        onRemoveClick = {
+                            viewModel.clearHomeMunicipio()
+                            showSearch.value = true
+                        }
+                    )
                 }
 
                 is SnapshotUiState.Error -> {
