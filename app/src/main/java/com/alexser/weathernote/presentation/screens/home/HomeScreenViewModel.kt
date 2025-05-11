@@ -3,13 +3,15 @@ package com.alexser.weathernote.presentation.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.AuthDataSource
+import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
+import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +20,8 @@ class HomeScreenViewModel @Inject constructor(
     private val authDataSource: AuthDataSource,
     private val getSnapshotUseCase: GetSnapshotUseCase,
     private val addMunicipioUseCase: AddMunicipioUseCase,
-    private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase
+    private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
+    private val homePrefs: HomeMunicipioPreferences // ✅ Inject preferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SnapshotUiState>(SnapshotUiState.Idle)
@@ -26,6 +29,19 @@ class HomeScreenViewModel @Inject constructor(
 
     private val _searchInput = MutableStateFlow("")
     val searchInput: StateFlow<String> = _searchInput
+
+    init {
+        loadSavedHomeMunicipio()
+    }
+
+    private fun loadSavedHomeMunicipio() {
+        viewModelScope.launch {
+            val savedId = homePrefs.homeMunicipioId.firstOrNull()
+            if (!savedId.isNullOrBlank()) {
+                fetchSnapshot(savedId)
+            }
+        }
+    }
 
     fun onSearchInputChanged(newInput: String) {
         _searchInput.value = newInput
@@ -57,6 +73,7 @@ class HomeScreenViewModel @Inject constructor(
         val municipio = SavedMunicipio(id = snapshot.cityId, nombre = snapshot.city)
         viewModelScope.launch {
             addMunicipioUseCase(municipio)
+            homePrefs.setHomeMunicipioId(municipio.id) // ✅ Save it as the "home"
         }
     }
 

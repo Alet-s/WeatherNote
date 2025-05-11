@@ -2,6 +2,8 @@ package com.alexser.weathernote.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +18,8 @@ import java.time.LocalDate
 @Composable
 fun WeatherCard(
     report: Snapshot,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSetHome: (() -> Unit)? = null // ✅ NEW
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -34,30 +37,25 @@ fun WeatherCard(
         ) {
             Column {
                 Text(report.city, style = MaterialTheme.typography.titleMedium)
-
                 Text(
                     text = formatIsoDateAsSpanish(report.date),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
-
-                Text(
-                    text = "Max: ${report.maxTemp}°C / Min: ${report.minTemp}°C",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Text(
-                    text = report.condition,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text("Max: ${report.maxTemp}°C / Min: ${report.minTemp}°C")
+                Text(report.condition)
             }
 
-            // Optionally: Show icon by condition string
-            // WeatherIcon(type = mapConditionToType(report.condition))
+            // ✅ Add Home Icon if provided
+            if (onSetHome != null) {
+                IconButton(onClick = onSetHome) {
+                    Icon(Icons.Default.Home, contentDescription = "Set as Home")
+                }
+            }
         }
     }
-
 }
+
 
 //@Preview(showBackground = true)
 //@Composable

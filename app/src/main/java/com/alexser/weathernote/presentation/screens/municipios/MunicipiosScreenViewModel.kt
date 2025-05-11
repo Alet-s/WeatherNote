@@ -3,6 +3,7 @@ package com.alexser.weathernote.presentation.screens.municipios
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.MunicipioSyncService
+import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.data.remote.model.HourlyForecastItem
@@ -31,7 +32,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val getSnapshotUseCase: GetSnapshotUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val syncService: MunicipioSyncService,
-    private val getHourlyForecastUseCase: GetHourlyForecastUseCase
+    private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
+    private val homeMunicipioPreferences: HomeMunicipioPreferences
     //TODO: implementar sugerencias en vivo cuando escribas
     //private val suggestMunicipiosUseCase: SuggestMunicipiosUseCase,
 ) : ViewModel() {
@@ -105,6 +107,12 @@ class MunicipiosScreenViewModel @Inject constructor(
             _snapshots.update { it - id }
 
             syncMunicipiosToFirestore()
+        }
+    }
+
+    fun setHomeMunicipio(id: String) {
+        viewModelScope.launch {
+            homeMunicipioPreferences.setHomeMunicipioId(id)
         }
     }
 

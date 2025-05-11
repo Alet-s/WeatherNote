@@ -116,6 +116,9 @@ fun MunicipiosScreen(
                                     report = snapshot,
                                     modifier = Modifier.clickable {
                                         selectedMunicipio.value = municipio
+                                    },
+                                    onSetHome = {
+                                        viewModel.setHomeMunicipio(municipio.id) // ✅ Triggers saving to DataStore
                                     }
                                 )
                             } else {
