@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.presentation.components.MunicipioSnapshotListCard
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +35,7 @@ fun SnapshotMunicipiosListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(municipios) { municipio ->
-                MunicipioCard(municipio) {
+                MunicipioSnapshotListCard(municipio) {
                     navController.navigate("snapshotMunicipio/${municipio.id}")
                 }
             }
@@ -43,20 +44,3 @@ fun SnapshotMunicipiosListScreen(
 }
 
 
-@Composable
-fun MunicipioCard(
-    municipio: SavedMunicipio,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = municipio.nombre, style = MaterialTheme.typography.titleMedium)
-            Text(text = "Tap to manage snapshots", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
