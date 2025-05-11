@@ -24,13 +24,11 @@ fun AppNavHost(
             HomeScreen(
                 viewModel = viewModel,
                 onLogout = { onLogout() },
-                onAddFavorite = { id, name -> /* maybe used later */ },
                 onRequestAddFavorite = {
                     navController.navigate("municipios?fromHome=true")
                 }
             )
         }
-
 
         composable(
             route = "municipios?fromHome={fromHome}",

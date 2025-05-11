@@ -7,7 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.presentation.components.BigWeatherCard
 
@@ -16,19 +15,9 @@ import com.alexser.weathernote.presentation.components.BigWeatherCard
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
     onLogout: () -> Unit,
-    onAddFavorite: (String, String) -> Unit, // This remains in case you want to reuse it later
     onRequestAddFavorite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val searchInput by viewModel.searchInput.collectAsState()
-    val searchFieldState = remember { mutableStateOf(TextFieldValue(searchInput)) }
-    val showSearch = remember { mutableStateOf(false) }
-
-    LaunchedEffect(searchInput) {
-        if (searchFieldState.value.text != searchInput) {
-            searchFieldState.value = TextFieldValue(searchInput)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -59,31 +48,6 @@ fun HomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-
-            if (showSearch.value || uiState is SnapshotUiState.Idle) {
-                OutlinedTextField(
-                    value = searchFieldState.value,
-                    onValueChange = {
-                        searchFieldState.value = it
-                        viewModel.onSearchInputChanged(it.text)
-                    },
-                    label = { Text("Search municipio") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        viewModel.searchAndFetchSnapshot()
-                        showSearch.value = false
-                    },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Search")
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
             when (uiState) {
                 is SnapshotUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -98,11 +62,8 @@ fun HomeScreen(
                     )
                     BigWeatherCard(
                         report = report,
-                        onEditClick = { showSearch.value = true },
-                        onRemoveClick = {
-                            viewModel.clearHomeMunicipio()
-                            showSearch.value = true
-                        }
+                        onEditClick = onRequestAddFavorite,
+                        onRemoveClick = viewModel::clearHomeMunicipio
                     )
                 }
 

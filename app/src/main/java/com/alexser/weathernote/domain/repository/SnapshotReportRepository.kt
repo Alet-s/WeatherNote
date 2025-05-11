@@ -1,0 +1,8 @@
+package com.alexser.weathernote.domain.repository
+
+import com.alexser.weathernote.domain.model.SnapshotReport
+
+interface SnapshotReportRepository {
+    suspend fun saveSnapshotReport(snapshot: SnapshotReport)
+    suspend fun getAllSnapshotsReports(): List<SnapshotReport>
+}
