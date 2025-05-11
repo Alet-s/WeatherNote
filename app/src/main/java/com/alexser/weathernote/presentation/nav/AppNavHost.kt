@@ -12,6 +12,7 @@ import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreen
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreenViewModel
+import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipiosListScreen
 
 @Composable
 fun AppNavHost(
@@ -45,10 +46,14 @@ fun AppNavHost(
         }
 
 
-
         composable("municipios_horaria") {
             val viewModel = hiltViewModel<MunicipiosHorariaScreenViewModel>()
             MunicipiosHorariaScreen(viewModel = viewModel)
         }
+
+        composable("snapshot_municipios_list") {
+            SnapshotMunicipiosListScreen(navController = navController)
+        }
+
     }
 }

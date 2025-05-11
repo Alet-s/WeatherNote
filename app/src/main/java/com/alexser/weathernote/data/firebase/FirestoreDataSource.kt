@@ -18,18 +18,4 @@ class FirestoreDataSource @Inject constructor(
         return snapshot.documents.firstOrNull()?.getString("code")
     }
 
-    suspend fun suggestMunicipiosByPrefix(prefix: String): List<String> {
-        if (prefix.length < 2) return emptyList() // avoid expensive queries on very short input
-
-        val snapshot = firestore.collection("municipios")
-            .orderBy("name")
-            .startAt(prefix)
-            .endAt(prefix + "\uf8ff")
-            .limit(10)
-            .get()
-            .await()
-
-        return snapshot.documents.mapNotNull { it.getString("name") }
-    }
-
 }

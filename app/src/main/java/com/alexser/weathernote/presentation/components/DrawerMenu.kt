@@ -21,6 +21,10 @@ fun DrawerContent(onDestinationClicked: (String) -> Unit) {
         DrawerItem("Inicio", Icons.Default.Home, onClick = { onDestinationClicked("home") })
         DrawerItem("Municipios", Icons.Default.CheckCircle, onClick = { onDestinationClicked("municipios") })
         DrawerItem("Municipios por hora", Icons.Default.MailOutline, onClick = { onDestinationClicked("municipios_horaria") })
+        DrawerItem("Snapshots", Icons.Default.CheckCircle) {
+            onDestinationClicked("snapshot_municipios_list")
+        }
+
     }
 }
 
