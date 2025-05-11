@@ -16,12 +16,13 @@ class SnapshotReportRepositoryImpl @Inject constructor(
     override suspend fun saveSnapshotReport(snapshot: SnapshotReport) {
         val userId = firebaseAuth.currentUser?.uid
             ?: throw IllegalStateException("User not authenticated")
-
+        println("🔥 Firebase userId: ${firebaseAuth.currentUser?.uid}")
         firestore.collection("users")
             .document(userId)
             .collection("snapshot_reports")
             .add(snapshot)
             .await()
+
     }
 
     override suspend fun getAllSnapshotsReports(): List<SnapshotReport> {

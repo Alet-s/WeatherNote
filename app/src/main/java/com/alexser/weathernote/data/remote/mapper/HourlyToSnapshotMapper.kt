@@ -7,15 +7,14 @@ import java.time.LocalDateTime
 fun HourlyForecastFullItem.toSnapshotReport(
     municipioId: String,
     municipioName: String,
-    //TODO: cambiar este dateT por date
-    dateT: String, // "2025-05-11"
+    date: String, // ISO date like "2025-05-11"
     userNote: String? = null
 ): SnapshotReport {
     val timestamp = try {
-        val parsed = LocalDateTime.parse("$dateT${hour.padStart(2, '0')}:00")
-        parsed.toString()  // ISO format
+        val parsed = LocalDateTime.parse("${date}T${hour.padStart(2, '0')}:00")
+        parsed.toString()  // ISO 8601 format
     } catch (e: Exception) {
-        "$dateT${hour.padStart(2, '0')}:00" // fallback
+        "${date}T${hour.padStart(2, '0')}:00" // fallback, still ISO-ish
     }
 
     return SnapshotReport(
