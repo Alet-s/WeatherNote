@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +24,13 @@ fun DrawerContent(onDestinationClicked: (String) -> Unit) {
         DrawerItem("Municipios por hora", Icons.Default.MailOutline, onClick = { onDestinationClicked("municipios_horaria") })
         DrawerItem("Snapshots", Icons.Default.CheckCircle) {
             onDestinationClicked("snapshot_municipios_list")
+
         }
+        //TODO: quitar esta pantalla
+        DrawerItem("Snapshot Test", Icons.Default.Refresh) {
+            onDestinationClicked("snapshot_test")
+        }
+
 
     }
 }

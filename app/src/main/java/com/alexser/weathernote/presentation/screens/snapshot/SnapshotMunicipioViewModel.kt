@@ -47,7 +47,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
 
     fun generateSnapshotManually() {
         val municipioId = _uiState.value.municipioId ?: return
-        val municipioName = _uiState.value.municipioName ?: return
+        val municipioName = _uiState.value.municipioName ?: "Desconocido"
 
         viewModelScope.launch {
             try {

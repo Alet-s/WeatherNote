@@ -14,6 +14,7 @@ import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHoraria
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreenViewModel
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipioScreen
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipiosListScreen
+import com.alexser.weathernote.presentation.screens.test.SnapshotTestScreen
 
 @Composable
 fun AppNavHost(
@@ -63,6 +64,11 @@ fun AppNavHost(
             val municipioId = backStackEntry.arguments?.getString("municipioId") ?: return@composable
             SnapshotMunicipioScreen(municipioId = municipioId, navController = navController)
         }
+
+        composable("snapshot_test") {
+            SnapshotTestScreen()
+        }
+
 
     }
 }
