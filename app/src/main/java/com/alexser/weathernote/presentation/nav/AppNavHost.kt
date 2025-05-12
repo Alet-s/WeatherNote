@@ -58,11 +58,22 @@ fun AppNavHost(
         }
 
         composable(
-            route = "snapshotMunicipio/{municipioId}",
-            arguments = listOf(navArgument("municipioId") { defaultValue = "" })
+            route = "snapshotMunicipio/{municipioId}/{municipioName}",
+            arguments = listOf(
+                navArgument("municipioId") { defaultValue = "" },
+                navArgument("municipioName") { defaultValue = "" }
+            )
         ) { backStackEntry ->
             val municipioId = backStackEntry.arguments?.getString("municipioId") ?: return@composable
-            SnapshotMunicipioScreen(municipioId = municipioId, navController = navController)
+            val municipioName = backStackEntry.arguments?.getString("municipioName") ?: "Desconocido"
+
+            SnapshotMunicipioScreen(
+                municipio = com.alexser.weathernote.domain.model.SavedMunicipio(
+                    id = municipioId,
+                    nombre = municipioName
+                ),
+                navController = navController
+            )
         }
 
         composable("snapshot_test") {

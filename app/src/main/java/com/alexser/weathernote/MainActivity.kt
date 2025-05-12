@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(Unit) {
                         val workRequest = androidx.work.PeriodicWorkRequestBuilder<
                                 com.alexser.weathernote.worker.SnapshotWorker
-                                >(1, java.util.concurrent.TimeUnit.HOURS).build()
+                                >(15, java.util.concurrent.TimeUnit.HOURS).build()
 
                         androidx.work.WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
                             "snapshot_worker",

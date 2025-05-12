@@ -34,7 +34,9 @@ fun SnapshotMunicipiosListScreen(
         ) {
             items(municipios) { municipio ->
                 MunicipioSnapshotListCard(municipio) {
-                    navController.navigate("snapshotMunicipio/${municipio.id}")
+                    navController.navigate(
+                        "snapshotMunicipio/${municipio.id}/${municipio.nombre}"
+                    )
                 }
             }
         }

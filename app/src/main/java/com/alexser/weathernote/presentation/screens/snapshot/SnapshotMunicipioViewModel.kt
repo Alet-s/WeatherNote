@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
+import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.SnapshotFrequency
 import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
@@ -44,7 +45,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
-    fun generateSnapshotManually() {
+    fun generateSnapshotManually(municipioId: SavedMunicipio) {
         val municipioId = _uiState.value.municipioId ?: return
         val municipioName = _uiState.value.municipioName ?: "Desconocido"
 
