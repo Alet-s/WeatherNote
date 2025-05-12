@@ -35,6 +35,18 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (isAuthenticated) {
+                    LaunchedEffect(Unit) {
+                        val workRequest = androidx.work.PeriodicWorkRequestBuilder<
+                                com.alexser.weathernote.worker.SnapshotWorker
+                                >(1, java.util.concurrent.TimeUnit.HOURS).build()
+
+                        androidx.work.WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                            "snapshot_worker",
+                            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                            workRequest
+                        )
+                    }
+
                     // ✅ Authenticated flow
                     val navController = rememberNavController()
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

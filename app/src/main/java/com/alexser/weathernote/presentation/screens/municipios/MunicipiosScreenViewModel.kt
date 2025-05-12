@@ -10,6 +10,7 @@ import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
+import com.alexser.weathernote.domain.usecase.DeleteSnapshotsByMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
 import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
@@ -34,7 +35,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val syncService: MunicipioSyncService,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
-    private val homeMunicipioPreferences: HomeMunicipioPreferences
+    private val homeMunicipioPreferences: HomeMunicipioPreferences,
+    private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase, // ✅ añade esto
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -54,6 +56,14 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
     val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
+
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage
+
+    fun clearSnackbarMessage() {
+        _snackbarMessage.value = null
+    }
+
 
     init {
         viewModelScope.launch {
@@ -109,12 +119,17 @@ class MunicipiosScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val toRemove = _municipios.value.find { it.id == id } ?: return@launch
             removeMunicipioUseCase(toRemove)
+            deleteSnapshotsByMunicipioUseCase(toRemove.id)
+
             _municipios.update { it.filterNot { it.id == id } }
             _snapshots.update { it - id }
 
+            _snackbarMessage.value = "Municipio y snapshots eliminados correctamente"
             syncMunicipiosToFirestore()
         }
     }
+
+
 
     fun setHomeMunicipio(id: String) {
         viewModelScope.launch {

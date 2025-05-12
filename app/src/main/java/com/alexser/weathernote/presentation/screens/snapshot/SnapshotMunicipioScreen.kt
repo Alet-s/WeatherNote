@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import com.alexser.weathernote.presentation.components.SnapshotFrequencySelector
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SnapshotMunicipioScreen(
@@ -84,7 +85,6 @@ fun SnapshotMunicipioScreen(
                     Text("Generate Snapshot")
                 }
             }
-
 
             Divider()
 

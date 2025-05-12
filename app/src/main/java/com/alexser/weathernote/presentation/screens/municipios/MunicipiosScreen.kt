@@ -39,6 +39,14 @@ fun MunicipiosScreen(
         selectedMunicipio.value?.let { municipio ->
             fullForecasts[municipio.id]?.firstOrNull { it.hour == currentHour }
         }
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSnackbarMessage()
+        }
+    }
 
     // ✅ Show onboarding snackbar prompt once
     LaunchedEffect(showPrompt) {

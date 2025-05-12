@@ -38,4 +38,20 @@ class SnapshotReportRepositoryImpl @Inject constructor(
         return result.toObjects(SnapshotReport::class.java)
     }
 
+    override suspend fun deleteSnapshotsByMunicipioId(municipioId: String) {
+        val userId = firebaseAuth.currentUser?.uid
+            ?: throw IllegalStateException("User not authenticated")
+
+        val snapshotsRef = firestore.collection("users")
+            .document(userId)
+            .collection("snapshot_reports")
+
+        val toDelete = snapshotsRef
+            .whereEqualTo("municipioId", municipioId)
+            .get()
+            .await()
+
+        toDelete.documents.forEach { it.reference.delete().await() }
+    }
+
 }

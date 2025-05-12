@@ -28,7 +28,6 @@ class SnapshotMunicipioViewModel @Inject constructor(
     private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase
 ) : ViewModel() {
 
-
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
     val uiState: StateFlow<SnapshotMunicipioUiState> = _uiState
 
@@ -55,10 +54,9 @@ class SnapshotMunicipioViewModel @Inject constructor(
 
                 val rawDtos = getHourlyForecastUseCase(municipioId)
                 val fullItems = rawDtos.flatMap { it.toHourlyForecastFullItems() }
-
                 val currentHour = LocalDateTime.now().hour.toString().padStart(2, '0')
-                println("🕒 Looking for forecast at hour $currentHour")
 
+                println("🕒 Looking for forecast at hour $currentHour")
                 val matching = fullItems.find { it.hour.padStart(2, '0').startsWith(currentHour) }
 
                 if (matching == null) {
@@ -84,8 +82,6 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
-
-
 
     fun updateFrequency(newFrequency: SnapshotFrequency) {
         val municipioId = _uiState.value.municipioId ?: return

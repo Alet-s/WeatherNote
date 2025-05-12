@@ -5,4 +5,5 @@ import com.alexser.weathernote.domain.model.SnapshotReport
 interface SnapshotReportRepository {
     suspend fun saveSnapshotReport(snapshot: SnapshotReport)
     suspend fun getAllSnapshotsReports(): List<SnapshotReport>
+    suspend fun deleteSnapshotsByMunicipioId(municipioId: String)
 }
