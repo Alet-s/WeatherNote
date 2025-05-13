@@ -65,7 +65,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     //Worker
-    implementation("androidx.hilt:hilt-work:1.1.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     // Preferences DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
@@ -73,18 +73,18 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
-    //Ksp
+    //Kapt
     kapt(libs.hilt.compiler)
     //Hilt
     implementation(libs.hilt.android)
-    // ✅ Hilt Navigation for Compose
+    //Hilt Navigation para Compose
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     //Firebase dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))//BOM
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")//Analytics
     implementation("com.google.firebase:firebase-auth-ktx")//Servicio de autenticación
-    implementation("com.google.firebase:firebase-firestore-ktx:24.10.3") // or latest
+    implementation("com.google.firebase:firebase-firestore-ktx:24.10.3") // Firestore
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
 }

@@ -1,6 +1,7 @@
 package com.alexser.weathernote.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -29,11 +30,9 @@ class SnapshotWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            val municipioList = getSavedMunicipiosUseCase().first() // ✅ get the first emission
+            val municipioList = getSavedMunicipiosUseCase().first()
             val nowHour = LocalDateTime.now().hour.toString().padStart(2, '0')
             val today = LocalDate.now().toString()
-
-            println("🔁 SnapshotWorker started. Municipios: ${municipioList.size}")
 
             municipioList.forEach { municipio ->
                 val freq = getSnapshotFrequencyUseCase(municipio.id)
@@ -49,13 +48,12 @@ class SnapshotWorker @AssistedInject constructor(
                     date = today
                 )
 
-                println("💾 Saving snapshot for ${municipio.nombre}")
                 saveSnapshotReportUseCase(snapshot)
             }
 
             Result.success()
         } catch (e: Exception) {
-            println("❌ SnapshotWorker failed: ${e.message}")
+            Log.e("SnapshotWorker", "❌ Worker failed: ${e.message}")
             Result.retry()
         }
     }

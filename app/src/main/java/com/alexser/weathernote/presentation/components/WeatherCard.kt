@@ -13,13 +13,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
+import com.alexser.weathernote.utils.formatMunicipioName // ✅ Import the formatter
 import java.time.LocalDate
 
 @Composable
 fun WeatherCard(
     report: Snapshot,
     modifier: Modifier = Modifier,
-    onSetHome: (() -> Unit)? = null // ✅ NEW
+    onSetHome: (() -> Unit)? = null
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -36,7 +37,10 @@ fun WeatherCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(report.city, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = formatMunicipioName(report.city), // ✅ Format the city name
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Text(
                     text = formatIsoDateAsSpanish(report.date),
                     style = MaterialTheme.typography.bodySmall,
@@ -46,7 +50,6 @@ fun WeatherCard(
                 Text(report.condition)
             }
 
-            // ✅ Add Home Icon if provided
             if (onSetHome != null) {
                 IconButton(onClick = onSetHome) {
                     Icon(Icons.Default.Home, contentDescription = "Set as Home")
@@ -55,18 +58,3 @@ fun WeatherCard(
         }
     }
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun WeatherCardPreview() {
-//    val report = Snapshot(
-//        city = "Plasencia",
-//        date = "2025-05-08T00:00:00",
-//        maxTemp = 22.0f,
-//        minTemp = 12.0f,
-//        condition = "Muy nubo"
-//    )
-//    WeatherCard(report = report)
-//}
-

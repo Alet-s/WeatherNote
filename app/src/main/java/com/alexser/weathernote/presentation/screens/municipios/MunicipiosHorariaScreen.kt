@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexser.weathernote.presentation.components.HourlyForecastRow
+import com.alexser.weathernote.utils.formatMunicipioName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun MunicipiosHorariaScreen(
             municipios.forEach { municipio ->
                 item {
                     Text(
-                        text = municipio.nombre,
+                        text = formatMunicipioName(municipio.nombre),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )

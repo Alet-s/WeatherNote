@@ -23,12 +23,15 @@ import java.time.LocalTime
 @Composable
 fun MunicipiosScreen(
     viewModel: MunicipiosScreenViewModel,
-    showPrompt: Boolean = false // ✅ New parameter to trigger onboarding prompt
+    showPrompt: Boolean = false
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val snapshots by viewModel.snapshots.collectAsState()
     val fullForecasts by viewModel.fullForecasts.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
+    val homeMunicipioId by viewModel.homeMunicipioId.collectAsState(initial = null)
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
+    val homeConfirmation by viewModel.homeConfirmationMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val selectedMunicipio = remember { mutableStateOf<SavedMunicipio?>(null) }
@@ -39,7 +42,6 @@ fun MunicipiosScreen(
         selectedMunicipio.value?.let { municipio ->
             fullForecasts[municipio.id]?.firstOrNull { it.hour == currentHour }
         }
-    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
@@ -48,14 +50,19 @@ fun MunicipiosScreen(
         }
     }
 
-    // ✅ Show onboarding snackbar prompt once
+    LaunchedEffect(homeConfirmation) {
+        homeConfirmation?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearHomeConfirmationMessage()
+        }
+    }
+
     LaunchedEffect(showPrompt) {
         if (showPrompt) {
             snackbarHostState.showSnackbar("Use the search bar to add a municipio.")
         }
     }
 
-    // Automatically trigger forecast fetch
     LaunchedEffect(selectedMunicipio.value) {
         selectedMunicipio.value?.let {
             viewModel.fetchHourlyForecast(it.id)
@@ -127,14 +134,19 @@ fun MunicipiosScreen(
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
                             if (snapshot != null) {
+                                //TODO: quitar
+                                Text(
+                                    text = "ID: ${municipio.id}, Home: $homeMunicipioId",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
                                 WeatherCard(
                                     report = snapshot,
                                     modifier = Modifier.clickable {
                                         selectedMunicipio.value = municipio
                                     },
-                                    onSetHome = {
-                                        viewModel.setHomeMunicipio(municipio.id)
-                                    }
+                                    onSetHome = if (municipio.id != homeMunicipioId) {
+                                        { viewModel.setHomeMunicipio(municipio.id) }
+                                    } else null
                                 )
                             } else {
                                 LinearProgressIndicator(

@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
+import com.alexser.weathernote.utils.formatMunicipioName // <-- Import added
 
 @Composable
 fun BigWeatherCard(
@@ -35,7 +36,7 @@ fun BigWeatherCard(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = report.city,
+                    text = formatMunicipioName(report.city), // <-- Applied formatting here
                     style = MaterialTheme.typography.headlineSmall
                 )
 

@@ -12,10 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.alexser.weathernote.presentation.components.DrawerContent
 import com.alexser.weathernote.presentation.nav.AppNavHost
 import com.alexser.weathernote.presentation.nav.AuthNavHost
 import com.alexser.weathernote.ui.theme.WeathernoteTheme
+import com.alexser.weathernote.worker.SnapshotWorker
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -38,13 +41,15 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(Unit) {
                         val workRequest = androidx.work.PeriodicWorkRequestBuilder<
                                 com.alexser.weathernote.worker.SnapshotWorker
-                                >(15, java.util.concurrent.TimeUnit.HOURS).build()
+                                >(15, java.util.concurrent.TimeUnit.MINUTES).build()
 
                         androidx.work.WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
                             "snapshot_worker",
                             androidx.work.ExistingPeriodicWorkPolicy.KEEP,
                             workRequest
                         )
+//                        val testWork = OneTimeWorkRequestBuilder<SnapshotWorker>().build()
+//                        WorkManager.getInstance(applicationContext).enqueue(testWork)
                     }
 
                     // ✅ Authenticated flow

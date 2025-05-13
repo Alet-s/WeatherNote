@@ -19,8 +19,10 @@ import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
 //import com.alexser.weathernote.domain.usecase.SuggestMunicipiosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -57,8 +59,14 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
     val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
 
+    val homeMunicipioId = homeMunicipioPreferences.homeMunicipioId
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
+
+    private val _homeConfirmationMessage = MutableStateFlow<String?>(null)
+    val homeConfirmationMessage: StateFlow<String?> = _homeConfirmationMessage
 
     fun clearSnackbarMessage() {
         _snackbarMessage.value = null
@@ -130,12 +138,18 @@ class MunicipiosScreenViewModel @Inject constructor(
     }
 
 
-
     fun setHomeMunicipio(id: String) {
         viewModelScope.launch {
             homeMunicipioPreferences.setHomeMunicipioId(id)
+            val name = _municipios.value.find { it.id == id }?.nombre
+            _homeConfirmationMessage.value = "✅ ${name ?: "Municipio"} set as home"
         }
     }
+
+    fun clearHomeConfirmationMessage() {
+        _homeConfirmationMessage.value = null
+    }
+
 
     fun syncMunicipiosToFirestore() {
         viewModelScope.launch {
