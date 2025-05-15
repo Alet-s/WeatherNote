@@ -1,6 +1,8 @@
 package com.alexser.weathernote.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -9,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.presentation.components.BigWeatherCard
+import com.alexser.weathernote.presentation.components.HourlyForecastCard // <- renamed composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,16 +58,36 @@ fun HomeScreen(
 
                 is SnapshotUiState.Success -> {
                     val report = (uiState as SnapshotUiState.Success).data
+                    val hourly = (uiState as SnapshotUiState.Success).hourly
+
                     Text(
                         "Today's Weather",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
+
                     BigWeatherCard(
                         report = report,
                         onEditClick = onRequestAddFavorite,
                         onRemoveClick = viewModel::clearHomeMunicipio
                     )
+
+                    if (hourly.isNotEmpty()) {
+                        Text(
+                            text = "Next hours",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                        )
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(hourly) { item ->
+                                HourlyForecastCard(item)
+                            }
+                        }
+                    }
                 }
 
                 is SnapshotUiState.Error -> {

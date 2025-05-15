@@ -7,11 +7,13 @@ import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
+import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.alexser.weathernote.data.remote.mapper.toHourlyForecastItems
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
@@ -19,6 +21,7 @@ class HomeScreenViewModel @Inject constructor(
     private val getSnapshotUseCase: GetSnapshotUseCase,
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
+    private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val homePrefs: HomeMunicipioPreferences
 ) : ViewModel() {
 
@@ -60,12 +63,26 @@ class HomeScreenViewModel @Inject constructor(
     fun fetchSnapshot(municipioId: String) {
         viewModelScope.launch {
             _uiState.value = SnapshotUiState.Loading
-            val result = getSnapshotUseCase(municipioId)
-            result
-                .onSuccess { data -> _uiState.value = SnapshotUiState.Success(data) }
-                .onFailure { e -> _uiState.value = SnapshotUiState.Error(e.localizedMessage ?: "Unknown error") }
+            val snapshotResult = getSnapshotUseCase(municipioId)
+
+            if (snapshotResult.isSuccess) {
+                val snapshot = snapshotResult.getOrThrow()
+                val hourlyDto = getHourlyForecastUseCase(municipioId)
+                val hourly = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
+
+                _uiState.value = SnapshotUiState.Success(
+                    data = snapshot,
+                    hourly = hourly
+                )
+            } else {
+                _uiState.value = SnapshotUiState.Error(
+                    snapshotResult.exceptionOrNull()?.localizedMessage ?: "Failed to load weather data"
+                )
+            }
         }
     }
+
+
 
     fun addToFavorites() {
         val snapshot = (_uiState.value as? SnapshotUiState.Success)?.data ?: return

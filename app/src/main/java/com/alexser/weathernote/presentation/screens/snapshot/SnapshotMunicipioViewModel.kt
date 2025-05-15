@@ -100,4 +100,5 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+
 }
