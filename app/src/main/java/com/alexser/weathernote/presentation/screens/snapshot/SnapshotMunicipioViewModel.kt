@@ -6,6 +6,7 @@ import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.SnapshotReport
+import com.alexser.weathernote.domain.usecase.DeleteBatchSnapshotsUseCase
 import com.alexser.weathernote.domain.usecase.DeleteSnapshotReportUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotReportsByMunicipioUseCase
@@ -23,8 +24,10 @@ class SnapshotMunicipioViewModel @Inject constructor(
     private val getSnapshotReportsByMunicipio: GetSnapshotReportsByMunicipioUseCase,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
-    private val deleteSnapshotReportUseCase: DeleteSnapshotReportUseCase // <-- injected
+    private val deleteSnapshotReportUseCase: DeleteSnapshotReportUseCase,
+    private val deleteBatchSnapshotsUseCase: DeleteBatchSnapshotsUseCase // ✅ Add this
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
     val uiState: StateFlow<SnapshotMunicipioUiState> = _uiState
@@ -80,4 +83,17 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteSnapshotsInBatch(snapshots: List<SnapshotReport>) {
+        viewModelScope.launch {
+            try {
+                deleteBatchSnapshotsUseCase(snapshots)
+                val updated = getSnapshotReportsByMunicipio(_uiState.value.municipioId ?: return@launch)
+                _uiState.value = _uiState.value.copy(snapshots = updated)
+            } catch (e: Exception) {
+                println("❌ Error deleting batch: ${e.message}")
+            }
+        }
+    }
+
 }

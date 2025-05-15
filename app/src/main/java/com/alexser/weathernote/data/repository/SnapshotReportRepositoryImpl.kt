@@ -70,4 +70,24 @@ class SnapshotReportRepositoryImpl @Inject constructor(
         toDelete.documents.firstOrNull()?.reference?.delete()?.await()
     }
 
+    override suspend fun deleteBatchSnapshots(snapshots: List<SnapshotReport>) {
+        val userId = firebaseAuth.currentUser?.uid
+            ?: throw IllegalStateException("User not authenticated")
+
+        val snapshotsRef = firestore.collection("users")
+            .document(userId)
+            .collection("snapshot_reports")
+
+        for (snapshot in snapshots) {
+            val query = snapshotsRef
+                .whereEqualTo("municipioId", snapshot.municipioId)
+                .whereEqualTo("timestamp", snapshot.timestamp)
+                .get()
+                .await()
+
+            query.documents.firstOrNull()?.reference?.delete()?.await()
+        }
+    }
+
+
 }
