@@ -5,6 +5,7 @@ import com.alexser.weathernote.domain.repository.SnapshotReportRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import javax.inject.Inject
 
 class SnapshotReportRepositoryImpl @Inject constructor(
@@ -15,11 +16,20 @@ class SnapshotReportRepositoryImpl @Inject constructor(
     override suspend fun saveSnapshotReport(snapshot: SnapshotReport) {
         val userId = firebaseAuth.currentUser?.uid
             ?: throw IllegalStateException("User not authenticated")
-        println("🔥 Firebase userId: ${firebaseAuth.currentUser?.uid}")
+
+        val reportWithId = if (snapshot.reportId.isBlank()) {
+            snapshot.copy(reportId = UUID.randomUUID().toString()) // ✅ generate unique ID
+        } else {
+            snapshot
+        }
+
+        println("🔥 Saving report with ID: ${reportWithId.reportId}")
+
         firestore.collection("users")
             .document(userId)
             .collection("snapshot_reports")
-            .add(snapshot)
+            .document(reportWithId.reportId) // ✅ use reportId as document ID
+            .set(reportWithId)
             .await()
     }
 
@@ -33,7 +43,9 @@ class SnapshotReportRepositoryImpl @Inject constructor(
             .get()
             .await()
 
-        return result.toObjects(SnapshotReport::class.java)
+        return result.documents.mapNotNull { doc ->
+            doc.toObject(SnapshotReport::class.java)
+        }
     }
 
     override suspend fun deleteSnapshotsByMunicipioId(municipioId: String) {
@@ -56,38 +68,24 @@ class SnapshotReportRepositoryImpl @Inject constructor(
         val userId = firebaseAuth.currentUser?.uid
             ?: throw IllegalStateException("User not authenticated")
 
-        val snapshotsRef = firestore.collection("users")
+        firestore.collection("users")
             .document(userId)
             .collection("snapshot_reports")
-
-        val toDelete = snapshotsRef
-            .whereEqualTo("municipioId", snapshot.municipioId)
-            .whereEqualTo("timestamp", snapshot.timestamp)
-            .get()
+            .document(snapshot.reportId)
+            .delete()
             .await()
-
-        // Only delete the first match to avoid unintended bulk deletes
-        toDelete.documents.firstOrNull()?.reference?.delete()?.await()
     }
 
     override suspend fun deleteBatchSnapshots(snapshots: List<SnapshotReport>) {
         val userId = firebaseAuth.currentUser?.uid
             ?: throw IllegalStateException("User not authenticated")
 
-        val snapshotsRef = firestore.collection("users")
+        val collectionRef = firestore.collection("users")
             .document(userId)
             .collection("snapshot_reports")
 
         for (snapshot in snapshots) {
-            val query = snapshotsRef
-                .whereEqualTo("municipioId", snapshot.municipioId)
-                .whereEqualTo("timestamp", snapshot.timestamp)
-                .get()
-                .await()
-
-            query.documents.firstOrNull()?.reference?.delete()?.await()
+            collectionRef.document(snapshot.reportId).delete().await()
         }
     }
-
-
 }

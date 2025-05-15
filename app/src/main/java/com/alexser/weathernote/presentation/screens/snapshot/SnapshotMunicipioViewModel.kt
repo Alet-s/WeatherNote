@@ -60,7 +60,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
                     municipioId = id,
                     municipioName = name,
                     date = LocalDate.now().toString()
-                )
+                ).copy(reportId = java.util.UUID.randomUUID().toString()) // ✅ assign reportId
 
                 saveSnapshotReportUseCase(snapshot)
 
@@ -71,6 +71,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
+
 
     fun deleteSnapshot(snapshot: SnapshotReport) {
         viewModelScope.launch {

@@ -1,6 +1,7 @@
 package com.alexser.weathernote.domain.model
 
 data class SnapshotReport(
+    val reportId: String = "",
     val timestamp: String = "",
     val municipioId: String = "",
     val municipioName: String = "",
