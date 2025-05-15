@@ -30,7 +30,8 @@ import androidx.compose.ui.unit.sp
 fun LoginScreen(
     viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
-    onNavigateToSignup: () -> Unit
+    onNavigateToSignup: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit
 ) {
     // ✅ Reset UI state when the screen is shown
     LaunchedEffect(Unit) {
@@ -78,6 +79,16 @@ fun LoginScreen(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .clickable { onNavigateToSignup() }
+        )
+
+        Text(
+            text = "¿Olvidaste tu contraseña?",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .clickable { onNavigateToForgotPassword() }
         )
 
         Button(

@@ -7,6 +7,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.alexser.weathernote.presentation.screens.login.ForgotPasswordScreen
+import com.alexser.weathernote.presentation.screens.login.ForgotPasswordViewModel
 import com.alexser.weathernote.presentation.screens.login.LoginScreen
 import com.alexser.weathernote.presentation.screens.login.LoginViewModel
 import com.alexser.weathernote.presentation.screens.signUp.SignupScreen
@@ -33,6 +35,9 @@ fun AuthNavHost(
                 },
                 onNavigateToSignup = {
                     navController.navigate("signup")
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate("forgot-password")
                 }
             )
         }
@@ -43,6 +48,16 @@ fun AuthNavHost(
                 viewModel = viewModel,
                 onSignupSuccess = {
                     navController.navigate("verify-email")
+                }
+            )
+        }
+
+        composable("forgot-password") {
+            val viewModel = hiltViewModel<ForgotPasswordViewModel>()
+            ForgotPasswordScreen(
+                viewModel = viewModel,
+                onBackToLogin = {
+                    navController.popBackStack() // or navController.navigate("login")
                 }
             )
         }

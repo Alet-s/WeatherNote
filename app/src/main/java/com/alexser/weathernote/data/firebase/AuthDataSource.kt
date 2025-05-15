@@ -31,6 +31,15 @@ class AuthDataSource @Inject constructor(
         }
     }
 
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            auth.sendPasswordResetEmail(email).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
     fun signOut() = auth.signOut()
 
