@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.presentation.components.BigWeatherCard
-import com.alexser.weathernote.presentation.components.HourlyForecastCard // <- renamed composable
+import com.alexser.weathernote.presentation.components.HourlyForecastCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +87,16 @@ fun HomeScreen(
                                 HourlyForecastCard(item)
                             }
                         }
+                    }
+
+                    // ✅ Add manual snapshot generation button
+                    Button(
+                        onClick = { viewModel.generateSnapshotManually() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp)
+                    ) {
+                        Text("Generate Snapshot Now")
                     }
                 }
 

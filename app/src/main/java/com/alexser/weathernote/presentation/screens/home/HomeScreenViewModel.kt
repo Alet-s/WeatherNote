@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.AuthDataSource
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
+import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
@@ -14,6 +15,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastItems
+import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
+import com.alexser.weathernote.domain.usecase.GenerateSnapshotReport
+import java.time.LocalTime
+import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
@@ -22,6 +27,8 @@ class HomeScreenViewModel @Inject constructor(
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
+    private val generateSnapshotUseCase: GenerateSnapshotReport,
+    private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
     private val homePrefs: HomeMunicipioPreferences
 ) : ViewModel() {
 
@@ -68,11 +75,14 @@ class HomeScreenViewModel @Inject constructor(
             if (snapshotResult.isSuccess) {
                 val snapshot = snapshotResult.getOrThrow()
                 val hourlyDto = getHourlyForecastUseCase(municipioId)
-                val hourly = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
+
+                val hourlyItems = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
+                val hourlyFullItems = hourlyDto.firstOrNull()?.toHourlyForecastFullItems() ?: emptyList()
 
                 _uiState.value = SnapshotUiState.Success(
                     data = snapshot,
-                    hourly = hourly
+                    hourly = hourlyItems,
+                    hourlyFull = hourlyFullItems
                 )
             } else {
                 _uiState.value = SnapshotUiState.Error(
@@ -82,6 +92,30 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    fun generateSnapshotManually() {
+        val state = _uiState.value as? SnapshotUiState.Success ?: return
+        val municipioId = state.data.cityId
+        val municipioName = state.data.city
+        val date = state.data.date
+        val fullList = state.hourlyFull ?: return
+
+        val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
+        val currentItem = fullList.find { it.hour == currentHour } ?: return
+
+        val report = currentItem.toSnapshotReport(
+            municipioId = municipioId,
+            municipioName = municipioName,
+            date = date
+        )
+
+        viewModelScope.launch {
+            try {
+                saveSnapshotReportUseCase(report)
+            } catch (e: Exception) {
+                // Optionally handle/log error
+            }
+        }
+    }
 
 
     fun addToFavorites() {
