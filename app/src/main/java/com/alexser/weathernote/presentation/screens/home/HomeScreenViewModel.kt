@@ -38,6 +38,9 @@ class HomeScreenViewModel @Inject constructor(
     private val _searchInput = MutableStateFlow("")
     val searchInput: StateFlow<String> = _searchInput
 
+    private val _snackbarMessage = MutableSharedFlow<String>()
+    val snackbarMessage = _snackbarMessage.asSharedFlow()
+
     init {
         // Observe changes in home municipio preference
         viewModelScope.launch {
@@ -111,8 +114,9 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 saveSnapshotReportUseCase(report)
+                _snackbarMessage.emit("Snapshot saved successfully.")
             } catch (e: Exception) {
-                // Optionally handle/log error
+                _snackbarMessage.emit("Error saving snapshot.")
             }
         }
     }

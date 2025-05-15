@@ -6,6 +6,5 @@ import com.alexser.weathernote.domain.model.SnapshotReport
 data class SnapshotMunicipioUiState(
     val municipioId: String? = null,
     val municipioName: String? = null,
-    val selectedFrequency: SnapshotFrequency = SnapshotFrequency.MANUAL,
     val snapshots: List<SnapshotReport> = emptyList()
 )

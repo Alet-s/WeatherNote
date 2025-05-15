@@ -5,12 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
 import com.alexser.weathernote.domain.model.SavedMunicipio
-import com.alexser.weathernote.domain.model.SnapshotFrequency
 import com.alexser.weathernote.domain.model.SnapshotReport
+import com.alexser.weathernote.domain.usecase.DeleteSnapshotReportUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotReportsByMunicipioUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotFrequencyUseCase
-import com.alexser.weathernote.domain.usecase.SaveSnapshotFrequencyUseCase
 import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,10 +21,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SnapshotMunicipioViewModel @Inject constructor(
     private val getSnapshotReportsByMunicipio: GetSnapshotReportsByMunicipioUseCase,
-    private val getSnapshotFrequency: GetSnapshotFrequencyUseCase,
-    private val saveSnapshotFrequency: SaveSnapshotFrequencyUseCase,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
-    private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase
+    private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
+    private val deleteSnapshotReportUseCase: DeleteSnapshotReportUseCase // <-- injected
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
@@ -35,70 +32,52 @@ class SnapshotMunicipioViewModel @Inject constructor(
     fun loadSnapshotData(municipioId: String) {
         viewModelScope.launch {
             val snapshots = getSnapshotReportsByMunicipio(municipioId)
-            val frequency = getSnapshotFrequency(municipioId)
             _uiState.value = _uiState.value.copy(
                 municipioId = municipioId,
                 municipioName = snapshots.firstOrNull()?.municipioName,
-                snapshots = snapshots,
-                selectedFrequency = frequency
+                snapshots = snapshots
             )
         }
     }
 
     fun generateSnapshotManually(municipioId: SavedMunicipio) {
-        val municipioId = _uiState.value.municipioId ?: return
-        val municipioName = _uiState.value.municipioName ?: "Desconocido"
+        val id = _uiState.value.municipioId ?: return
+        val name = _uiState.value.municipioName ?: "Desconocido"
 
         viewModelScope.launch {
             try {
-                println("🔍 Fetching hourly forecast for $municipioId")
-
-                val rawDtos = getHourlyForecastUseCase(municipioId)
+                val rawDtos = getHourlyForecastUseCase(id)
                 val fullItems = rawDtos.flatMap { it.toHourlyForecastFullItems() }
                 val currentHour = LocalDateTime.now().hour.toString().padStart(2, '0')
 
-                println("🕒 Looking for forecast at hour $currentHour")
                 val matching = fullItems.find { it.hour.padStart(2, '0').startsWith(currentHour) }
-
-                if (matching == null) {
-                    println("⚠️ No matching forecast found for $currentHour")
-                    return@launch
-                }
+                if (matching == null) return@launch
 
                 val snapshot = matching.toSnapshotReport(
-                    municipioId = municipioId,
-                    municipioName = municipioName,
+                    municipioId = id,
+                    municipioName = name,
                     date = LocalDate.now().toString()
                 )
 
-                println("💾 Saving snapshot: $snapshot")
                 saveSnapshotReportUseCase(snapshot)
-                println("✅ Snapshot saved!")
 
-                val updated = getSnapshotReportsByMunicipio(municipioId)
+                val updated = getSnapshotReportsByMunicipio(id)
                 _uiState.value = _uiState.value.copy(snapshots = updated)
-
             } catch (e: Exception) {
                 println("❌ Error generating snapshot: ${e.message}")
             }
         }
     }
 
-    fun updateFrequency(newFrequency: SnapshotFrequency) {
-        val municipioId = _uiState.value.municipioId ?: return
+    fun deleteSnapshot(snapshot: SnapshotReport) {
         viewModelScope.launch {
-            saveSnapshotFrequency(municipioId, newFrequency)
-            _uiState.value = _uiState.value.copy(selectedFrequency = newFrequency)
+            try {
+                deleteSnapshotReportUseCase(snapshot)
+                val updated = getSnapshotReportsByMunicipio(snapshot.municipioId)
+                _uiState.value = _uiState.value.copy(snapshots = updated)
+            } catch (e: Exception) {
+                println("❌ Error deleting snapshot: ${e.message}")
+            }
         }
     }
-
-    fun saveFrequency() {
-        val municipioId = _uiState.value.municipioId ?: return
-        val frequency = _uiState.value.selectedFrequency
-        viewModelScope.launch {
-            saveSnapshotFrequency(municipioId, frequency)
-        }
-    }
-
-
 }

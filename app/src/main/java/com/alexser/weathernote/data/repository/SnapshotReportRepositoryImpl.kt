@@ -10,7 +10,6 @@ import javax.inject.Inject
 class SnapshotReportRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth
-
 ) : SnapshotReportRepository {
 
     override suspend fun saveSnapshotReport(snapshot: SnapshotReport) {
@@ -22,7 +21,6 @@ class SnapshotReportRepositoryImpl @Inject constructor(
             .collection("snapshot_reports")
             .add(snapshot)
             .await()
-
     }
 
     override suspend fun getAllSnapshotsReports(): List<SnapshotReport> {
@@ -52,6 +50,24 @@ class SnapshotReportRepositoryImpl @Inject constructor(
             .await()
 
         toDelete.documents.forEach { it.reference.delete().await() }
+    }
+
+    override suspend fun deleteSnapshot(snapshot: SnapshotReport) {
+        val userId = firebaseAuth.currentUser?.uid
+            ?: throw IllegalStateException("User not authenticated")
+
+        val snapshotsRef = firestore.collection("users")
+            .document(userId)
+            .collection("snapshot_reports")
+
+        val toDelete = snapshotsRef
+            .whereEqualTo("municipioId", snapshot.municipioId)
+            .whereEqualTo("timestamp", snapshot.timestamp)
+            .get()
+            .await()
+
+        // Only delete the first match to avoid unintended bulk deletes
+        toDelete.documents.firstOrNull()?.reference?.delete()?.await()
     }
 
 }

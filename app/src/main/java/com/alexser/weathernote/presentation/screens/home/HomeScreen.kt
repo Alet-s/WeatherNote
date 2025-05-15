@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.presentation.components.BigWeatherCard
 import com.alexser.weathernote.presentation.components.HourlyForecastCard
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +22,14 @@ fun HomeScreen(
     onRequestAddFavorite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // ✅ Listen for snackbar messages
+    LaunchedEffect(Unit) {
+        viewModel.snackbarMessage.collectLatest { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -36,6 +45,7 @@ fun HomeScreen(
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (uiState is SnapshotUiState.Idle) {
                 FloatingActionButton(onClick = onRequestAddFavorite) {
@@ -89,7 +99,7 @@ fun HomeScreen(
                         }
                     }
 
-                    // ✅ Add manual snapshot generation button
+                    // ✅ Manual snapshot generation button
                     Button(
                         onClick = { viewModel.generateSnapshotManually() },
                         modifier = Modifier
