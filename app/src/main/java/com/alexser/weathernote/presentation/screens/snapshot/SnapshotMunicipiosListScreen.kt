@@ -20,16 +20,19 @@ fun SnapshotMunicipiosListScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Snapshots") })
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // TopAppBar replacement
+        Text(
+            text = "Snapshots",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(municipios) { municipio ->
@@ -42,5 +45,3 @@ fun SnapshotMunicipiosListScreen(
         }
     }
 }
-
-

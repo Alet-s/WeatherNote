@@ -2,9 +2,11 @@ package com.alexser.weathernote.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val NYTWhite = Color(0xFFFFFFFF)
-val NYTBlack = Color(0xFF121212)
-val NYTRed = Color(0xFFC8161D)
-val NYTGray = Color(0xFF5A5A5A)
-val NYTLightGray = Color(0xFFE1E1E1)
-val NYTSoftGray = Color(0xFFF7F7F7)
+val DeepBlue = Color(0xFF4A707A)     // primary
+val SlateBlue = Color(0xFF7697A0)    // primaryContainer
+val SkyBlue = Color(0xFF94B0B7)      // secondaryContainer
+val CloudGray = Color(0xFFC2C8C5)    // surface
+val MistGray = Color(0xFFFAFAFA)     // background
+
+val OnDark = Color.White
+val OnLight = Color(0xFF121212)

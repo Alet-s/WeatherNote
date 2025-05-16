@@ -1,13 +1,12 @@
 package com.alexser.weathernote.presentation.screens.municipios
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,40 +20,77 @@ fun MunicipiosHorariaScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val hourlyForecasts by viewModel.hourlyForecasts.collectAsState()
+    var selectedMunicipioId by remember { mutableStateOf<String?>(null) }
 
-    // 👇 Forzamos recarga al entrar en la pantalla
     LaunchedEffect(Unit) {
         viewModel.reloadForecasts()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Hourly Forecasts") })
-        }
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            municipios.forEach { municipio ->
-                item {
-                    Text(
-                        text = formatMunicipioName(municipio.nombre),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // TopAppBar replacement
+        Text(
+            text = selectedMunicipioId?.let { id ->
+                municipios.find { it.id == id }?.let { formatMunicipioName(it.nombre) }
+            } ?: "Predicción horaria",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-                items(hourlyForecasts[municipio.id].orEmpty()) { item ->
-                    HourlyForecastRow(forecast = item)
-                    Divider()
-                }
+        if (selectedMunicipioId == null) {
+            Text(
+                text = "Municipios guardados",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(municipios) { municipio ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedMunicipioId = municipio.id
+                            }
+                    ) {
+                        Text(
+                            text = formatMunicipioName(municipio.nombre),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
+            }
+        } else {
+            val forecast = hourlyForecasts[selectedMunicipioId].orEmpty()
+
+            Text(
+                text = "Predicción por hora",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            if (forecast.isEmpty()) {
+                Text("No hay datos disponibles.")
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    items(forecast) { item ->
+                        HourlyForecastRow(forecast = item)
+                        Divider()
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { selectedMunicipioId = null },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Volver a la lista")
             }
         }
     }

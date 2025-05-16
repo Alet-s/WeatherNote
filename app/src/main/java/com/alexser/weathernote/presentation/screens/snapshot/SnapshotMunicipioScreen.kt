@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,7 +32,7 @@ import kotlinx.coroutines.launch
 
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SnapshotMunicipioScreen(
     municipio: SavedMunicipio,
@@ -39,6 +41,8 @@ fun SnapshotMunicipioScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedIndexes = remember { mutableStateListOf<Int>() }
+    var selectionMode by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -73,49 +77,59 @@ fun SnapshotMunicipioScreen(
         } else {
             selectedIndexes.add(index)
         }
+        if (selectedIndexes.isEmpty()) selectionMode = false
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(municipio.nombre) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier.size(54.dp),
-                onClick = { viewModel.generateSnapshotManually(municipio) }
-            ) {
-                Icon(
-                    Icons.Default.AddCircle,
-                    contentDescription = "Generate Snapshot",
-                    modifier = Modifier.size(26.dp)
-                )
-            }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Top Bar
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(municipio.nombre, style = MaterialTheme.typography.titleLarge)
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+
+            // Snackbar
+            SnackbarHost(hostState = snackbarHostState)
+
             val selectedReportIds = uiState.snapshots
                 .mapIndexedNotNull { index, snapshot ->
                     if (selectedIndexes.contains(index)) snapshot.reportId else null
                 }
 
-            if (selectedReportIds.isNotEmpty()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+            // ✅ Select All / Deselect All
+            if (selectionMode && uiState.snapshots.isNotEmpty()) {
+                val allSelected = selectedIndexes.size == uiState.snapshots.size
+
+                TextButton(
+                    onClick = {
+                        if (allSelected) {
+                            selectedIndexes.clear()
+                            selectionMode = false
+                        } else {
+                            selectedIndexes.clear()
+                            selectedIndexes.addAll(uiState.snapshots.indices)
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.End)
                 ) {
+                    Text(if (allSelected) "Deselect All" else "Select All")
+                }
+            }
+
+            // ✅ Batch Delete + Download Options
+            if (selectionMode && selectedReportIds.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -125,6 +139,7 @@ fun SnapshotMunicipioScreen(
                                 val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
                                 viewModel.deleteSnapshotsInBatch(toDelete)
                                 selectedIndexes.clear()
+                                selectionMode = false
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
                                 }
@@ -173,30 +188,55 @@ fun SnapshotMunicipioScreen(
                 contentPadding = PaddingValues(bottom = 96.dp)
             ) {
                 itemsIndexed(uiState.snapshots) { index, snapshot ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Checkbox(
-                            checked = selectedIndexes.contains(index),
-                            onCheckedChange = { toggleSelection(index) }
-                        )
-                        SnapshotReportItem(
-                            snapshot = snapshot,
-                            onDelete = {
-                                viewModel.deleteSnapshot(snapshot)
-                                selectedIndexes.remove(index)
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Snapshot deleted")
+                    SnapshotReportItem(
+                        snapshot = snapshot,
+                        showCheckbox = selectionMode,
+                        checked = selectedIndexes.contains(index),
+                        onCheckToggle = { toggleSelection(index) },
+                        onDelete = {
+                            viewModel.deleteSnapshot(snapshot)
+                            selectedIndexes.remove(index)
+                            if (selectedIndexes.isEmpty()) selectionMode = false
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Snapshot deleted")
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                onClick = {
+                                    if (selectionMode) toggleSelection(index)
+                                },
+                                onLongClick = {
+                                    if (!selectionMode) {
+                                        selectionMode = true
+                                        toggleSelection(index)
+                                    }
                                 }
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                            )
+                    )
                 }
             }
         }
+
+        // FAB
+        FloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+                .size(54.dp),
+            onClick = { viewModel.generateSnapshotManually(municipio) }
+        ) {
+            Icon(
+                Icons.Default.AddCircle,
+                contentDescription = "Generate Snapshot",
+                modifier = Modifier.size(26.dp)
+            )
+        }
     }
 }
+
+
+
 
 

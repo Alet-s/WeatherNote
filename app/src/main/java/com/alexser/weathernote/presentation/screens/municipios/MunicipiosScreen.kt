@@ -69,121 +69,127 @@ fun MunicipiosScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Saved Municipios") },
-                actions = {
-                    IconButton(onClick = { viewModel.reloadFromFirestore() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Reload")
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { innerPadding ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // TopAppBar replacement
+        Row(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize()
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = nameInput,
-                    onValueChange = { nameInput = it },
-                    label = { Text("Municipio name") },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    if (nameInput.text.isNotBlank()) {
-                        viewModel.addMunicipioByName(nameInput.text)
-                        nameInput = TextFieldValue()
-                    }
-                }) {
-                    Text("Add")
-                }
+            Text("Saved Municipios", style = MaterialTheme.typography.titleLarge)
+            IconButton(onClick = { viewModel.reloadFromFirestore() }) {
+                Icon(Icons.Default.Refresh, contentDescription = "Reload")
             }
+        }
 
-            suggestions.forEach { suggestion ->
-                Text(
-                    text = suggestion,
+        // SnackbarHost placement
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Search bar
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = nameInput,
+                onValueChange = { nameInput = it },
+                label = { Text("Municipio name") },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+                if (nameInput.text.isNotBlank()) {
+                    viewModel.addMunicipioByName(nameInput.text)
+                    nameInput = TextFieldValue()
+                }
+            }) {
+                Text("Add")
+            }
+        }
+
+        suggestions.forEach { suggestion ->
+            Text(
+                text = suggestion,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clickable {
+                        nameInput = TextFieldValue(suggestion)
+                    }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(municipios) { municipio ->
+                val snapshot = snapshots[municipio.id]
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .clickable {
-                            nameInput = TextFieldValue(suggestion)
+                        .padding(vertical = 4.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (snapshot != null) {
+                            //TODO: quitar
+                            Text(
+                                text = "ID: ${municipio.id}, Home: $homeMunicipioId",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            WeatherCard(
+                                report = snapshot,
+                                modifier = Modifier.clickable {
+                                    selectedMunicipio.value = municipio
+                                },
+                                onSetHome = if (municipio.id != homeMunicipioId) {
+                                    { viewModel.setHomeMunicipio(municipio.id) }
+                                } else null
+                            )
+                        } else {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            )
                         }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn {
-                items(municipios) { municipio ->
-                    val snapshot = snapshots[municipio.id]
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                    }
+                    IconButton(
+                        onClick = { viewModel.removeMunicipio(municipio.id) },
+                        modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            if (snapshot != null) {
-                                //TODO: quitar
-                                Text(
-                                    text = "ID: ${municipio.id}, Home: $homeMunicipioId",
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                                WeatherCard(
-                                    report = snapshot,
-                                    modifier = Modifier.clickable {
-                                        selectedMunicipio.value = municipio
-                                    },
-                                    onSetHome = if (municipio.id != homeMunicipioId) {
-                                        { viewModel.setHomeMunicipio(municipio.id) }
-                                    } else null
-                                )
-                            } else {
-                                LinearProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = { viewModel.removeMunicipio(municipio.id) },
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete municipio")
-                        }
+                        Icon(Icons.Default.Delete, contentDescription = "Delete municipio")
                     }
                 }
             }
+        }
 
-            selectedMunicipio.value?.let {
-                if (currentFullItem != null) {
-                    HourlyForecastDialog(
-                        data = currentFullItem,
-                        onDismiss = { selectedMunicipio.value = null }
-                    )
-                } else {
-                    AlertDialog(
-                        onDismissRequest = { selectedMunicipio.value = null },
-                        confirmButton = {
-                            TextButton(onClick = { selectedMunicipio.value = null }) {
-                                Text("Close")
-                            }
-                        },
-                        title = { Text("Loading forecast...") },
-                        text = { Text("Please wait while we fetch the current hour's data.") }
-                    )
-                }
+        selectedMunicipio.value?.let {
+            if (currentFullItem != null) {
+                HourlyForecastDialog(
+                    data = currentFullItem,
+                    onDismiss = { selectedMunicipio.value = null }
+                )
+            } else {
+                AlertDialog(
+                    onDismissRequest = { selectedMunicipio.value = null },
+                    confirmButton = {
+                        TextButton(onClick = { selectedMunicipio.value = null }) {
+                            Text("Close")
+                        }
+                    },
+                    title = { Text("Loading forecast...") },
+                    text = { Text("Please wait while we fetch the current hour's data.") }
+                )
             }
         }
     }
