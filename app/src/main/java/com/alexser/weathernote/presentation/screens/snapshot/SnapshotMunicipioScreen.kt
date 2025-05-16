@@ -25,11 +25,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.domain.model.SavedMunicipio
-import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import kotlinx.coroutines.launch
 
-// ...imports omitted for brevity...
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,34 +113,55 @@ fun SnapshotMunicipioScreen(
                 }
 
             if (selectedReportIds.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
-                            viewModel.deleteSnapshotsInBatch(toDelete)
-                            selectedIndexes.clear()
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Eliminar seleccionados", color = MaterialTheme.colorScheme.onError)
+                        Button(
+                            onClick = {
+                                val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
+                                viewModel.deleteSnapshotsInBatch(toDelete)
+                                selectedIndexes.clear()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Eliminar seleccionados", color = MaterialTheme.colorScheme.onError)
+                        }
                     }
 
-                    Button(
-                        onClick = {
-                            requestStoragePermissionIfNeeded()
-                            viewModel.downloadSnapshotsAsJsonById(context, selectedReportIds)
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("${selectedReportIds.size} saved as .json")
-                            }
-                        }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Descargar seleccionados")
+                        Button(
+                            onClick = {
+                                requestStoragePermissionIfNeeded()
+                                viewModel.downloadSnapshotsAsJsonById(context, selectedReportIds)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("${selectedReportIds.size} saved individually")
+                                }
+                            }
+                        ) {
+                            Text("Descargar como varios JSON")
+                        }
+
+                        Button(
+                            onClick = {
+                                requestStoragePermissionIfNeeded()
+                                viewModel.downloadSnapshotsAsJsonBatchFile(context, selectedReportIds)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Archivo combinado creado")
+                                }
+                            }
+                        ) {
+                            Text("Descargar como único archivo")
+                        }
                     }
                 }
             }
@@ -178,4 +198,5 @@ fun SnapshotMunicipioScreen(
         }
     }
 }
+
 

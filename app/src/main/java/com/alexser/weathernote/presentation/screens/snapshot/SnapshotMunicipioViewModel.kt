@@ -124,5 +124,38 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    fun downloadSnapshotsAsJsonBatchFile(context: Context, reportIds: List<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val gson = Gson()
+                val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!dir.exists()) dir.mkdirs()
+
+                val snapshots = mutableListOf<SnapshotReport>()
+
+                for (reportId in reportIds) {
+                    val snapshot = getSnapshotByReportIdUseCase(reportId)
+                    if (snapshot != null) {
+                        snapshots.add(snapshot)
+                    }
+                }
+
+                if (snapshots.isNotEmpty()) {
+                    val jsonArray = gson.toJson(snapshots)
+                    val timestamp = LocalDateTime.now().toString().replace(":", "-")
+                    val fileName = "WeatherSnapshots_$timestamp.json"
+                    val file = File(dir, fileName)
+
+                    file.writeText(jsonArray)
+                    println("📥 Combined snapshot file saved to ${file.absolutePath}")
+                }
+
+            } catch (e: Exception) {
+                println("❌ Error writing combined snapshot file: ${e.message}")
+            }
+        }
+    }
+
+
 
 }
