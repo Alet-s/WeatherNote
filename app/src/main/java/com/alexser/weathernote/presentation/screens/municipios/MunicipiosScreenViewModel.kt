@@ -6,27 +6,19 @@ import com.alexser.weathernote.data.firebase.MunicipioSyncService
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
-import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.Snapshot
-import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
-import com.alexser.weathernote.domain.usecase.DeleteSnapshotsByMunicipioUseCase
-import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
-import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
-import com.alexser.weathernote.domain.usecase.GetSavedMunicipiosUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
-import com.alexser.weathernote.domain.usecase.RemoveMunicipioUseCase
-//import com.alexser.weathernote.domain.usecase.SuggestMunicipiosUseCase
+import com.alexser.weathernote.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import java.time.LocalTime
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
+
+sealed class SnapshotUiState {
+    object Loading : SnapshotUiState()
+    data class Success(val snapshot: Snapshot) : SnapshotUiState()
+    data class Error(val message: String) : SnapshotUiState()
+}
 
 @HiltViewModel
 class MunicipiosScreenViewModel @Inject constructor(
@@ -38,14 +30,14 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val syncService: MunicipioSyncService,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val homeMunicipioPreferences: HomeMunicipioPreferences,
-    private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase, // ✅ añade esto
+    private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
     val municipios: StateFlow<List<SavedMunicipio>> = _municipios
 
-    private val _snapshots = MutableStateFlow<Map<String, Snapshot?>>(emptyMap())
-    val snapshots: StateFlow<Map<String, Snapshot?>> = _snapshots
+    private val _snapshotUiStates = MutableStateFlow<Map<String, SnapshotUiState>>(emptyMap())
+    val snapshotUiStates: StateFlow<Map<String, SnapshotUiState>> = _snapshotUiStates
 
     private val _syncSuccess = MutableStateFlow<Boolean?>(null)
     val syncSuccess: StateFlow<Boolean?> = _syncSuccess
@@ -56,9 +48,6 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val _hourlyFullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
     val hourlyFullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _hourlyFullForecasts
 
-    private val _fullForecasts = MutableStateFlow<Map<String, List<HourlyForecastFullItem>>>(emptyMap())
-    val fullForecasts: StateFlow<Map<String, List<HourlyForecastFullItem>>> = _fullForecasts
-
     val homeMunicipioId = homeMunicipioPreferences.homeMunicipioId
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -68,21 +57,17 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val _homeConfirmationMessage = MutableStateFlow<String?>(null)
     val homeConfirmationMessage: StateFlow<String?> = _homeConfirmationMessage
 
-    fun clearSnackbarMessage() {
-        _snackbarMessage.value = null
+    init {
+        loadMunicipiosAndSnapshots()
     }
 
-
-    init {
+    private fun loadMunicipiosAndSnapshots() {
         viewModelScope.launch {
             try {
                 val remoteMunicipios = syncService.downloadRemoteMunicipios()
-
-                // ✅ Fetch current local municipios
                 val current = getSavedMunicipiosUseCase().first()
                 val currentIds = current.map { it.id }.toSet()
 
-                // ✅ Only add new ones
                 remoteMunicipios.forEach { municipio ->
                     if (municipio.id !in currentIds) {
                         addMunicipioUseCase(municipio)
@@ -92,15 +77,26 @@ class MunicipiosScreenViewModel @Inject constructor(
                 _syncSuccess.value = false
             }
 
-            // ✅ Listen for updates from local DB
             getSavedMunicipiosUseCase().collect { savedList ->
                 _municipios.value = savedList
                 savedList.forEach { municipio ->
-                    if (!_snapshots.value.containsKey(municipio.id)) {
-                        val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
-                        _snapshots.update { it + (municipio.id to snapshot) }
+                    if (!_snapshotUiStates.value.containsKey(municipio.id)) {
+                        fetchSnapshot(municipio.id)
                     }
                 }
+            }
+        }
+    }
+
+    fun fetchSnapshot(municipioId: String) {
+        viewModelScope.launch {
+            _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Loading) }
+
+            try {
+                val snapshot = retryIO { getSnapshotUseCase(municipioId).getOrThrow() }
+                _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Success(snapshot)) }
+            } catch (e: Exception) {
+                _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Error(e.message ?: "Error al cargar datos")) }
             }
         }
     }
@@ -108,17 +104,11 @@ class MunicipiosScreenViewModel @Inject constructor(
     fun addMunicipioByName(name: String) {
         viewModelScope.launch {
             val id = findMunicipioByNameUseCase(name)
-            if (id != null) {
-                val alreadyExists = _municipios.value.any { it.id == id }
-                if (!alreadyExists) {
-                    val newMunicipio = SavedMunicipio(id = id, nombre = name)
-                    addMunicipioUseCase(newMunicipio)
-
-                    val snapshot = getSnapshotUseCase(id).getOrNull()
-                    _snapshots.update { it + (id to snapshot) }
-
-                    syncMunicipiosToFirestore()
-                }
+            if (id != null && _municipios.value.none { it.id == id }) {
+                val newMunicipio = SavedMunicipio(id = id, nombre = name)
+                addMunicipioUseCase(newMunicipio)
+                fetchSnapshot(id)
+                syncMunicipiosToFirestore()
             }
         }
     }
@@ -130,13 +120,12 @@ class MunicipiosScreenViewModel @Inject constructor(
             deleteSnapshotsByMunicipioUseCase(toRemove.id)
 
             _municipios.update { it.filterNot { it.id == id } }
-            _snapshots.update { it - id }
+            _snapshotUiStates.update { it - id }
 
             _snackbarMessage.value = "Municipio y snapshots eliminados correctamente"
             syncMunicipiosToFirestore()
         }
     }
-
 
     fun setHomeMunicipio(id: String) {
         viewModelScope.launch {
@@ -146,10 +135,13 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
+    fun clearSnackbarMessage() {
+        _snackbarMessage.value = null
+    }
+
     fun clearHomeConfirmationMessage() {
         _homeConfirmationMessage.value = null
     }
-
 
     fun syncMunicipiosToFirestore() {
         viewModelScope.launch {
@@ -166,15 +158,12 @@ class MunicipiosScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val remoteMunicipios = syncService.downloadRemoteMunicipios()
-
                 val current = _municipios.value
                 val merged = (current + remoteMunicipios).distinctBy { it.id }
 
                 _municipios.value = merged
-
                 remoteMunicipios.forEach { municipio ->
-                    val snapshot = getSnapshotUseCase(municipio.id).getOrNull()
-                    _snapshots.update { it + (municipio.id to snapshot) }
+                    fetchSnapshot(municipio.id)
                 }
             } catch (e: Exception) {
                 _syncSuccess.value = false
@@ -187,26 +176,29 @@ class MunicipiosScreenViewModel @Inject constructor(
             try {
                 val rawDtos = getHourlyForecastUseCase(municipioId)
                 val items = rawDtos.flatMap { it.toHourlyForecastFullItems() }
-                _fullForecasts.update { it + (municipioId to items) }
+                _hourlyFullForecasts.update { it + (municipioId to items) }
             } catch (e: Exception) {
-                // optional log
-            }
-        }
-    }
-
-    fun loadFullForecastForMunicipio(id: String) {
-        viewModelScope.launch {
-            try {
-                val rawDtos = getHourlyForecastUseCase(id)
-                val fullItems = rawDtos.flatMap { it.toHourlyForecastFullItems() }
-                _hourlyFullForecasts.update { it + (id to fullItems) }
-            } catch (e: Exception) {
-                // optional log
+                // Optional logging
             }
         }
     }
 
     fun resetSyncStatus() {
         _syncSuccess.value = null
+    }
+
+    private suspend fun <T> retryIO(
+        times: Int = 3,
+        delayMillis: Long = 1000,
+        block: suspend () -> T
+    ): T {
+        repeat(times - 1) {
+            try {
+                return block()
+            } catch (_: Exception) {
+                delay(delayMillis)
+            }
+        }
+        return block() // final attempt
     }
 }

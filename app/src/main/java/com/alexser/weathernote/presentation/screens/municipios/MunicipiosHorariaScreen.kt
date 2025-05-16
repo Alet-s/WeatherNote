@@ -1,11 +1,16 @@
 package com.alexser.weathernote.presentation.screens.municipios
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,72 +31,93 @@ fun MunicipiosHorariaScreen(
         viewModel.reloadForecasts()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // TopAppBar replacement
-        Text(
-            text = selectedMunicipioId?.let { id ->
-                municipios.find { it.id == id }?.let { formatMunicipioName(it.nombre) }
-            } ?: "Predicción horaria",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        if (selectedMunicipioId == null) {
-            Text(
-                text = "Municipios guardados",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 12.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = selectedMunicipioId?.let { id ->
+                            municipios.find { it.id == id }?.let { formatMunicipioName(it.nombre) }
+                        } ?: "Predicción horaria"
+                    )
+                }
             )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (selectedMunicipioId == null) {
+                Text(
+                    text = "Selecciona un municipio para ver su predicción horaria",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(municipios) { municipio ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                selectedMunicipioId = municipio.id
-                            }
-                    ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    municipios.forEach { municipio ->
+                        ElevatedButton(
+                            onClick = { selectedMunicipioId = municipio.id },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Text(formatMunicipioName(municipio.nombre))
+                        }
+                    }
+                }
+            } else {
+                val forecastList = hourlyForecasts[selectedMunicipioId].orEmpty()
+
+                Text(
+                    text = "Predicción por hora",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    if (forecastList.isEmpty()) {
                         Text(
-                            text = formatMunicipioName(municipio.nombre),
-                            style = MaterialTheme.typography.titleLarge,
+                            "No hay datos disponibles.",
                             modifier = Modifier.padding(16.dp)
                         )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            items(forecastList) { item ->
+                                HourlyForecastRow(forecast = item)
+                                Divider()
+                            }
+                        }
                     }
                 }
-            }
-        } else {
-            val forecast = hourlyForecasts[selectedMunicipioId].orEmpty()
 
-            Text(
-                text = "Predicción por hora",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+                Spacer(modifier = Modifier.height(24.dp))
 
-            if (forecast.isEmpty()) {
-                Text("No hay datos disponibles.")
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(forecast) { item ->
-                        HourlyForecastRow(forecast = item)
-                        Divider()
-                    }
+                Button(
+                    onClick = { selectedMunicipioId = null },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                ) {
+                    Text("Volver a la lista")
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { selectedMunicipioId = null },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Volver a la lista")
             }
         }
     }
 }
+
