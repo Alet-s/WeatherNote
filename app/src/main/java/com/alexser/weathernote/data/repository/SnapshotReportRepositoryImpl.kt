@@ -88,4 +88,21 @@ class SnapshotReportRepositoryImpl @Inject constructor(
             collectionRef.document(snapshot.reportId).delete().await()
         }
     }
+
+    override suspend fun getSnapshotByReportId(reportId: String): SnapshotReport? {
+        val userId = firebaseAuth.currentUser?.uid
+            ?: throw IllegalStateException("User not authenticated")
+
+        val doc = firestore.collection("users")
+            .document(userId)
+            .collection("snapshot_reports")
+            .document(reportId)
+            .get()
+            .await()
+
+        return if (doc.exists()) {
+            doc.toObject(SnapshotReport::class.java)?.copy(reportId = doc.id)
+        } else null
+    }
+
 }

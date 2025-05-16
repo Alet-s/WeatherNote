@@ -5,6 +5,9 @@
     <!-- 🔐 Required for WorkManager background scheduling -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- ✅ Add this permission for saving to system Downloads -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

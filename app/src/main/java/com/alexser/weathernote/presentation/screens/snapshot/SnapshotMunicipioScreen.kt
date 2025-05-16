@@ -1,5 +1,12 @@
 package com.alexser.weathernote.presentation.screens.snapshot
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,14 +17,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import kotlinx.coroutines.launch
+
+// ...imports omitted for brevity...
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +42,27 @@ fun SnapshotMunicipioScreen(
     val selectedIndexes = remember { mutableStateListOf<Int>() }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (!granted) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Permission denied. Cannot save files.")
+                }
+            }
+        }
+    )
+
+    fun requestStoragePermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    }
 
     LaunchedEffect(municipio.id) {
         viewModel.loadSnapshotData(municipio.id)
@@ -75,22 +108,41 @@ fun SnapshotMunicipioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val toDelete = uiState.snapshots.filterIndexed { index, _ ->
-                selectedIndexes.contains(index)
-            }
+            val selectedReportIds = uiState.snapshots
+                .mapIndexedNotNull { index, snapshot ->
+                    if (selectedIndexes.contains(index)) snapshot.reportId else null
+                }
 
-            if (toDelete.isNotEmpty()) {
-                Button(
-                    onClick = {
-                        viewModel.deleteSnapshotsInBatch(toDelete)
-                        selectedIndexes.clear()
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            if (selectedReportIds.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Eliminar seleccionados", color = MaterialTheme.colorScheme.onError)
+                    Button(
+                        onClick = {
+                            val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
+                            viewModel.deleteSnapshotsInBatch(toDelete)
+                            selectedIndexes.clear()
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Eliminar seleccionados", color = MaterialTheme.colorScheme.onError)
+                    }
+
+                    Button(
+                        onClick = {
+                            requestStoragePermissionIfNeeded()
+                            viewModel.downloadSnapshotsAsJsonById(context, selectedReportIds)
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("${selectedReportIds.size} saved as .json")
+                            }
+                        }
+                    ) {
+                        Text("Descargar seleccionados")
+                    }
                 }
             }
 
@@ -126,3 +178,4 @@ fun SnapshotMunicipioScreen(
         }
     }
 }
+

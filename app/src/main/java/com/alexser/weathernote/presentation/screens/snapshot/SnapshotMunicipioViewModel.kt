@@ -1,5 +1,7 @@
 package com.alexser.weathernote.presentation.screens.snapshot
 
+import android.content.Context
+import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
@@ -9,12 +11,16 @@ import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.domain.usecase.DeleteBatchSnapshotsUseCase
 import com.alexser.weathernote.domain.usecase.DeleteSnapshotReportUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
+import com.alexser.weathernote.domain.usecase.GetSnapshotByReportIdUseCase
 import com.alexser.weathernote.domain.usecase.GetSnapshotReportsByMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -25,9 +31,9 @@ class SnapshotMunicipioViewModel @Inject constructor(
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
     private val deleteSnapshotReportUseCase: DeleteSnapshotReportUseCase,
-    private val deleteBatchSnapshotsUseCase: DeleteBatchSnapshotsUseCase // ✅ Add this
+    private val deleteBatchSnapshotsUseCase: DeleteBatchSnapshotsUseCase,
+    private val getSnapshotByReportIdUseCase: GetSnapshotByReportIdUseCase
 ) : ViewModel() {
-
 
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
     val uiState: StateFlow<SnapshotMunicipioUiState> = _uiState
@@ -60,7 +66,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
                     municipioId = id,
                     municipioName = name,
                     date = LocalDate.now().toString()
-                ).copy(reportId = java.util.UUID.randomUUID().toString()) // ✅ assign reportId
+                ).copy(reportId = java.util.UUID.randomUUID().toString())
 
                 saveSnapshotReportUseCase(snapshot)
 
@@ -71,7 +77,6 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
-
 
     fun deleteSnapshot(snapshot: SnapshotReport) {
         viewModelScope.launch {
@@ -96,5 +101,28 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
+
+    fun downloadSnapshotsAsJsonById(context: Context, reportIds: List<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val gson = Gson()
+                val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!dir.exists()) dir.mkdirs()
+
+                for (reportId in reportIds) {
+                    val snapshot = getSnapshotByReportIdUseCase(reportId)
+                    if (snapshot != null) {
+                        val json = gson.toJson(snapshot)
+                        val fileName = "Snapshot_${snapshot.municipioName}_${snapshot.timestamp}_${snapshot.reportId.take(8)}.json"
+                        val file = File(dir, fileName.replace(":", "-"))
+                        file.writeText(json)
+                    }
+                }
+            } catch (e: Exception) {
+                println("❌ Error writing snapshot to file: ${e.message}")
+            }
+        }
+    }
+
 
 }
