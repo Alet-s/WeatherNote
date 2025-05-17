@@ -3,6 +3,8 @@ package com.alexser.weathernote.presentation.screens.snapshot
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,26 +22,33 @@ fun SnapshotMunicipiosListScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // TopAppBar replacement
-        Text(
-            text = "Snapshots",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Snapshots") },
+                actions = {
+                    IconButton(onClick = { navController.navigate("snapshotConfig") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Configuración")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            items(municipios) { municipio ->
-                MunicipioSnapshotListCard(municipio) {
-                    navController.navigate(
-                        "snapshotMunicipio/${municipio.id}/${municipio.nombre}"
-                    )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(municipios) { municipio ->
+                    MunicipioSnapshotListCard(municipio) {
+                        navController.navigate(
+                            "snapshotMunicipio/${municipio.id}/${municipio.nombre}"
+                        )
+                    }
                 }
             }
         }

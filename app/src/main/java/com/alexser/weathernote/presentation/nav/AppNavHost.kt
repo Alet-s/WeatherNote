@@ -8,10 +8,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.alexser.weathernote.presentation.screens.home.HomeScreen
 import com.alexser.weathernote.presentation.screens.home.HomeScreenViewModel
-import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
-import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreen
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosHorariaScreenViewModel
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreen
+import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
+import com.alexser.weathernote.presentation.screens.snapshot.SnapshotConfigScreen
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipioScreen
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipiosListScreen
 import com.alexser.weathernote.presentation.screens.test.SnapshotTestScreen
@@ -22,6 +23,7 @@ fun AppNavHost(
     onLogout: () -> Unit
 ) {
     NavHost(navController = navController, startDestination = "home") {
+
         composable("home") {
             val viewModel = hiltViewModel<HomeScreenViewModel>()
             HomeScreen(
@@ -46,7 +48,6 @@ fun AppNavHost(
                 showPrompt = fromHome
             )
         }
-
 
         composable("municipios_horaria") {
             val viewModel = hiltViewModel<MunicipiosHorariaScreenViewModel>()
@@ -80,6 +81,9 @@ fun AppNavHost(
             SnapshotTestScreen()
         }
 
-
+        // ✅ Configuración de Snapshot
+        composable("snapshotConfig") {
+            SnapshotConfigScreen(navController = navController)
+        }
     }
 }

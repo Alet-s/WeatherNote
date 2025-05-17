@@ -2,18 +2,15 @@ package com.alexser.weathernote.presentation.screens.snapshot
 
 import android.content.Context
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.model.SnapshotReport
-import com.alexser.weathernote.domain.usecase.DeleteBatchSnapshotsUseCase
-import com.alexser.weathernote.domain.usecase.DeleteSnapshotReportUseCase
-import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotByReportIdUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotReportsByMunicipioUseCase
-import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
+import com.alexser.weathernote.domain.usecase.*
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -102,24 +99,43 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    private fun resolveFinalDirectory(context: Context): File {
+        val prefs = SnapshotPreferences(context)
+        val subfolder = prefs.getDownloadPath()?.trim()?.takeIf { it.isNotBlank() } ?: ""
+        val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val finalDir = if (subfolder.equals("Download", ignoreCase = true) || subfolder.isBlank()) {
+            baseDir
+        } else {
+            File(baseDir, subfolder)
+        }
+
+        if (!finalDir.exists()) {
+            val created = finalDir.mkdirs()
+            Log.d("SNAPSHOT_IO", "Created directory: ${finalDir.absolutePath} -> success: $created")
+        }
+
+        Log.d("SNAPSHOT_IO", "Resolved directory: ${finalDir.absolutePath}")
+        return finalDir
+    }
+
     fun downloadSnapshotsAsJsonById(context: Context, reportIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val dir = resolveFinalDirectory(context)
                 val gson = Gson()
-                val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                if (!dir.exists()) dir.mkdirs()
 
                 for (reportId in reportIds) {
                     val snapshot = getSnapshotByReportIdUseCase(reportId)
                     if (snapshot != null) {
                         val json = gson.toJson(snapshot)
-                        val fileName = "Snapshot_${snapshot.municipioName}_${snapshot.timestamp}_${snapshot.reportId.take(8)}.json"
+                        val fileName = "Snapshot_${snapshot.municipioName}_${snapshot.timestamp}.json"
                         val file = File(dir, fileName.replace(":", "-"))
                         file.writeText(json)
+                        Log.d("SNAPSHOT_IO", "📄 Saved individual snapshot: ${file.absolutePath}")
                     }
                 }
             } catch (e: Exception) {
-                println("❌ Error writing snapshot to file: ${e.message}")
+                Log.e("SNAPSHOT_IO", "❌ Error saving individual snapshots: ${e.message}")
             }
         }
     }
@@ -127,17 +143,13 @@ class SnapshotMunicipioViewModel @Inject constructor(
     fun downloadSnapshotsAsJsonBatchFile(context: Context, reportIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val dir = resolveFinalDirectory(context)
                 val gson = Gson()
-                val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                if (!dir.exists()) dir.mkdirs()
-
                 val snapshots = mutableListOf<SnapshotReport>()
 
                 for (reportId in reportIds) {
                     val snapshot = getSnapshotByReportIdUseCase(reportId)
-                    if (snapshot != null) {
-                        snapshots.add(snapshot)
-                    }
+                    if (snapshot != null) snapshots.add(snapshot)
                 }
 
                 if (snapshots.isNotEmpty()) {
@@ -145,17 +157,39 @@ class SnapshotMunicipioViewModel @Inject constructor(
                     val timestamp = LocalDateTime.now().toString().replace(":", "-")
                     val fileName = "WeatherSnapshots_$timestamp.json"
                     val file = File(dir, fileName)
-
                     file.writeText(jsonArray)
-                    println("📥 Combined snapshot file saved to ${file.absolutePath}")
+                    Log.d("SNAPSHOT_IO", "📄 Saved combined file: ${file.absolutePath}")
                 }
-
             } catch (e: Exception) {
-                println("❌ Error writing combined snapshot file: ${e.message}")
+                Log.e("SNAPSHOT_IO", "❌ Error saving combined snapshot file: ${e.message}")
             }
         }
     }
 
+    fun saveSnapshotJsonToUri(context: Context, uri: android.net.Uri, reportIds: List<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val gson = Gson()
+                val snapshots = mutableListOf<SnapshotReport>()
 
+                for (reportId in reportIds) {
+                    val snapshot = getSnapshotByReportIdUseCase(reportId)
+                    if (snapshot != null) snapshots.add(snapshot)
+                }
+
+                if (snapshots.isNotEmpty()) {
+                    val jsonArray = gson.toJson(snapshots)
+                    context.contentResolver.openOutputStream(uri)?.use { output ->
+                        output.write(jsonArray.toByteArray())
+                    }
+                    Log.d("SNAPSHOT_IO", "✅ Saved JSON to selected URI")
+                } else {
+                    Log.w("SNAPSHOT_IO", "⚠️ No snapshots to save")
+                }
+            } catch (e: Exception) {
+                Log.e("SNAPSHOT_IO", "❌ Error saving snapshot to URI: ${e.message}")
+            }
+        }
+    }
 
 }
