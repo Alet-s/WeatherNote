@@ -19,7 +19,7 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val getSavedMunicipiosUseCase: GetSavedMunicipiosUseCase,
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val removeMunicipioUseCase: RemoveMunicipioUseCase,
-    private val getSnapshotUseCase: GetSnapshotUseCase,
+    private val getBasicWeatherForecastUseCase: GetBasicWeatherForecastUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val syncService: MunicipioSyncService,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
@@ -88,7 +88,7 @@ class MunicipiosScreenViewModel @Inject constructor(
             _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Loading) }
 
             try {
-                val snapshot = retryIO { getSnapshotUseCase(municipioId).getOrThrow() }
+                val snapshot = retryIO { getBasicWeatherForecastUseCase(municipioId).getOrThrow() }
                 _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Success(snapshot)) }
             } catch (e: Exception) {
                 _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Error(e.message ?: "Error al cargar datos")) }

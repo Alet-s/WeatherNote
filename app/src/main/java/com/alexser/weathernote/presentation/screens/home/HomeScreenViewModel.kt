@@ -9,7 +9,7 @@ import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
-import com.alexser.weathernote.domain.usecase.GetSnapshotUseCase
+import com.alexser.weathernote.domain.usecase.GetBasicWeatherForecastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val authDataSource: AuthDataSource,
-    private val getSnapshotUseCase: GetSnapshotUseCase,
+    private val getBasicWeatherForecastUseCase: GetBasicWeatherForecastUseCase,
     private val addMunicipioUseCase: AddMunicipioUseCase,
     private val findMunicipioByNameUseCase: FindMunicipioByNameUseCase,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
@@ -73,7 +73,7 @@ class HomeScreenViewModel @Inject constructor(
     fun fetchSnapshot(municipioId: String) {
         viewModelScope.launch {
             _uiState.value = SnapshotUiState.Loading
-            val snapshotResult = getSnapshotUseCase(municipioId)
+            val snapshotResult = getBasicWeatherForecastUseCase(municipioId)
 
             if (snapshotResult.isSuccess) {
                 val snapshot = snapshotResult.getOrThrow()
