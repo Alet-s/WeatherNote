@@ -1,11 +1,10 @@
 package com.alexser.weathernote.presentation.screens.snapshot
 
 import android.content.Context
-import android.os.Environment
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
 import com.alexser.weathernote.domain.model.SavedMunicipio
@@ -17,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -70,7 +68,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
                 val updated = getSnapshotReportsByMunicipio(id)
                 _uiState.value = _uiState.value.copy(snapshots = updated)
             } catch (e: Exception) {
-                println("❌ Error generating snapshot: ${e.message}")
+                Log.e("SNAPSHOT_GENERATE", "❌ Error generating snapshot: ${e.message}")
             }
         }
     }
@@ -82,7 +80,7 @@ class SnapshotMunicipioViewModel @Inject constructor(
                 val updated = getSnapshotReportsByMunicipio(snapshot.municipioId)
                 _uiState.value = _uiState.value.copy(snapshots = updated)
             } catch (e: Exception) {
-                println("❌ Error deleting snapshot: ${e.message}")
+                Log.e("SNAPSHOT_DELETE", "❌ Error deleting snapshot: ${e.message}")
             }
         }
     }
@@ -94,93 +92,21 @@ class SnapshotMunicipioViewModel @Inject constructor(
                 val updated = getSnapshotReportsByMunicipio(_uiState.value.municipioId ?: return@launch)
                 _uiState.value = _uiState.value.copy(snapshots = updated)
             } catch (e: Exception) {
-                println("❌ Error deleting batch: ${e.message}")
+                Log.e("SNAPSHOT_DELETE_BATCH", "❌ Error deleting batch: ${e.message}")
             }
         }
     }
 
-    private fun resolveFinalDirectory(context: Context): File {
-        val prefs = SnapshotPreferences(context)
-        val subfolder = prefs.getDownloadPath()?.trim()?.takeIf { it.isNotBlank() } ?: ""
-        val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val finalDir = if (subfolder.equals("Download", ignoreCase = true) || subfolder.isBlank()) {
-            baseDir
-        } else {
-            File(baseDir, subfolder)
-        }
-
-        if (!finalDir.exists()) {
-            val created = finalDir.mkdirs()
-            Log.d("SNAPSHOT_IO", "Created directory: ${finalDir.absolutePath} -> success: $created")
-        }
-
-        Log.d("SNAPSHOT_IO", "Resolved directory: ${finalDir.absolutePath}")
-        return finalDir
-    }
-
-    fun downloadSnapshotsAsJsonById(context: Context, reportIds: List<String>) {
+    fun saveSnapshotJsonToUri(context: Context, uri: Uri, reportIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val dir = resolveFinalDirectory(context)
                 val gson = Gson()
-
-                for (reportId in reportIds) {
-                    val snapshot = getSnapshotByReportIdUseCase(reportId)
-                    if (snapshot != null) {
-                        val json = gson.toJson(snapshot)
-                        val fileName = "Snapshot_${snapshot.municipioName}_${snapshot.timestamp}.json"
-                        val file = File(dir, fileName.replace(":", "-"))
-                        file.writeText(json)
-                        Log.d("SNAPSHOT_IO", "📄 Saved individual snapshot: ${file.absolutePath}")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("SNAPSHOT_IO", "❌ Error saving individual snapshots: ${e.message}")
-            }
-        }
-    }
-
-    fun downloadSnapshotsAsJsonBatchFile(context: Context, reportIds: List<String>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val dir = resolveFinalDirectory(context)
-                val gson = Gson()
-                val snapshots = mutableListOf<SnapshotReport>()
-
-                for (reportId in reportIds) {
-                    val snapshot = getSnapshotByReportIdUseCase(reportId)
-                    if (snapshot != null) snapshots.add(snapshot)
-                }
+                val snapshots = reportIds.mapNotNull { getSnapshotByReportIdUseCase(it) }
 
                 if (snapshots.isNotEmpty()) {
-                    val jsonArray = gson.toJson(snapshots)
-                    val timestamp = LocalDateTime.now().toString().replace(":", "-")
-                    val fileName = "WeatherSnapshots_$timestamp.json"
-                    val file = File(dir, fileName)
-                    file.writeText(jsonArray)
-                    Log.d("SNAPSHOT_IO", "📄 Saved combined file: ${file.absolutePath}")
-                }
-            } catch (e: Exception) {
-                Log.e("SNAPSHOT_IO", "❌ Error saving combined snapshot file: ${e.message}")
-            }
-        }
-    }
-
-    fun saveSnapshotJsonToUri(context: Context, uri: android.net.Uri, reportIds: List<String>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val gson = Gson()
-                val snapshots = mutableListOf<SnapshotReport>()
-
-                for (reportId in reportIds) {
-                    val snapshot = getSnapshotByReportIdUseCase(reportId)
-                    if (snapshot != null) snapshots.add(snapshot)
-                }
-
-                if (snapshots.isNotEmpty()) {
-                    val jsonArray = gson.toJson(snapshots)
+                    val json = gson.toJson(snapshots)
                     context.contentResolver.openOutputStream(uri)?.use { output ->
-                        output.write(jsonArray.toByteArray())
+                        output.write(json.toByteArray())
                     }
                     Log.d("SNAPSHOT_IO", "✅ Saved JSON to selected URI")
                 } else {
@@ -191,5 +117,4 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
-
 }
