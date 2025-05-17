@@ -1,5 +1,7 @@
 package com.alexser.weathernote.di
 
+import android.app.Application
+import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.repository.MunicipioRepositoryImpl
 import com.alexser.weathernote.data.repository.SnapshotConfigRepositoryImpl
 import com.alexser.weathernote.data.repository.SnapshotReportRepositoryImpl
@@ -55,6 +57,14 @@ object AppModule {
         firebaseAuth: FirebaseAuth
     ): SnapshotReportRepository {
         return SnapshotReportRepositoryImpl(firestore, firebaseAuth)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSnapshotPreferences(
+        application: Application
+    ): SnapshotPreferences {
+        return SnapshotPreferences(application.applicationContext)
     }
 
 

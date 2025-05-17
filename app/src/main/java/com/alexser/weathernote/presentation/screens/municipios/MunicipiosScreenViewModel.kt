@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.MunicipioSyncService
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
+import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
@@ -30,7 +31,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val syncService: MunicipioSyncService,
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val homeMunicipioPreferences: HomeMunicipioPreferences,
-    private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase
+    private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase,
+    private val snapshotPreferences: SnapshotPreferences
 ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -113,16 +115,26 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
-    fun removeMunicipio(id: String) {
+    fun removeMunicipioWithOption(id: String, deleteSnapshots: Boolean) {
         viewModelScope.launch {
             val toRemove = _municipios.value.find { it.id == id } ?: return@launch
             removeMunicipioUseCase(toRemove)
-            deleteSnapshotsByMunicipioUseCase(toRemove.id)
+
+            if (deleteSnapshots) {
+                deleteSnapshotsByMunicipioUseCase(toRemove.id)
+                snapshotPreferences.removeRetentionForMunicipio(toRemove.id)
+            }
 
             _municipios.update { it.filterNot { it.id == id } }
             _snapshotUiStates.update { it - id }
 
-            _snackbarMessage.value = "Municipio y snapshots eliminados correctamente"
+            val msg = if (deleteSnapshots) {
+                "Municipio and snapshots deleted"
+            } else {
+                "Municipio deleted (snapshots kept)"
+            }
+
+            _snackbarMessage.value = msg
             syncMunicipiosToFirestore()
         }
     }
@@ -199,6 +211,6 @@ class MunicipiosScreenViewModel @Inject constructor(
                 delay(delayMillis)
             }
         }
-        return block() // final attempt
+        return block()
     }
 }

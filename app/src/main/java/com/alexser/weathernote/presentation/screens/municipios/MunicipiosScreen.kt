@@ -33,9 +33,11 @@ fun MunicipiosScreen(
     val homeMunicipioId by viewModel.homeMunicipioId.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
     val homeConfirmation by viewModel.homeConfirmationMessage.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
 
+    val snackbarHostState = remember { SnackbarHostState() }
     val selectedMunicipio = remember { mutableStateOf<SavedMunicipio?>(null) }
+    val municipioToDelete = remember { mutableStateOf<SavedMunicipio?>(null) }
+
     var nameInput by remember { mutableStateOf(TextFieldValue()) }
     var showSearch by remember { mutableStateOf(false) }
 
@@ -94,10 +96,7 @@ fun MunicipiosScreen(
             }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.fillMaxWidth()
-        )
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.fillMaxWidth())
 
         AnimatedVisibility(visible = showSearch) {
             Column {
@@ -166,7 +165,7 @@ fun MunicipiosScreen(
                                     { viewModel.setHomeMunicipio(municipio.id) }
                                 } else null,
                                 onDelete = {
-                                    viewModel.removeMunicipio(municipio.id)
+                                    municipioToDelete.value = municipio
                                 }
                             )
                         }
@@ -215,6 +214,32 @@ fun MunicipiosScreen(
                     text = { Text("Please wait while we fetch the current hour's data.") }
                 )
             }
+        }
+
+        municipioToDelete.value?.let { municipio ->
+            AlertDialog(
+                onDismissRequest = { municipioToDelete.value = null },
+                title = { Text("Delete ${municipio.nombre}?") },
+                text = {
+                    Text("Do you also want to delete all snapshots for this municipio?")
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.removeMunicipioWithOption(municipio.id, deleteSnapshots = true)
+                        municipioToDelete.value = null
+                    }) {
+                        Text("Delete with snapshots")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        viewModel.removeMunicipioWithOption(municipio.id, deleteSnapshots = false)
+                        municipioToDelete.value = null
+                    }) {
+                        Text("Keep snapshots")
+                    }
+                }
+            )
         }
     }
 }
