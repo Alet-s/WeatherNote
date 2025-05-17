@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -116,9 +118,10 @@ fun SnapshotMunicipioScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(
+                        IconButton(
                             onClick = {
                                 val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
                                 viewModel.deleteSnapshotsInBatch(toDelete)
@@ -127,25 +130,36 @@ fun SnapshotMunicipioScreen(
                                     snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            modifier = Modifier.size(48.dp)
                         ) {
-                            Text("Eliminar seleccionados", color = MaterialTheme.colorScheme.onError)
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete selected",
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
-                    }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
+                        IconButton(
                             onClick = {
                                 val suggestedName = "WeatherSnapshots_${System.currentTimeMillis()}.json"
                                 createDocumentLauncher.launch(suggestedName)
-                            }
+                            },
+                            modifier = Modifier.size(48.dp)
                         ) {
-                            Text("Descargar como único archivo")
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Download selected"
+                            )
                         }
+
+                        Text(
+                            text = "${selectedReportIds.size} selected",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
+
+
                 }
             }
 
