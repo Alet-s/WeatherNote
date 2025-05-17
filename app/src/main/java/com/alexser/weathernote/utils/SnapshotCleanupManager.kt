@@ -3,6 +3,7 @@ package com.alexser.weathernote.utils
 import android.content.Context
 import android.util.Log
 import com.alexser.weathernote.data.local.SnapshotPreferences
+import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.domain.model.SnapshotRetentionOption
 import com.alexser.weathernote.domain.repository.SnapshotReportRepository
 
@@ -13,24 +14,35 @@ class SnapshotCleanupManager(
     suspend fun runCleanupIfNeeded() {
         try {
             val prefs = SnapshotPreferences(context)
-            val retention = prefs.getSnapshotRetention() ?: SnapshotRetentionOption.KEEP_ALL
-            val max = retention.maxSnapshots
+            val allSnapshots = repository.getAllSnapshotsReports()
 
-            if (max != null) {
-                val all = repository.getAllSnapshotsReports()
-                    .sortedByDescending { it.timestamp }
+            val grouped = allSnapshots.groupBy { it.municipioId }
 
-                val toDelete = all.drop(max)
+            var totalDeleted = 0
 
-                if (toDelete.isNotEmpty()) {
-                    repository.deleteBatchSnapshots(toDelete)
-                    Log.d("SNAPSHOT_CLEANUP", "🧹 Deleted ${toDelete.size} old snapshots")
+            for ((municipioId, snapshots) in grouped) {
+                val option = prefs.getRetentionForMunicipio(municipioId)
+                    ?: prefs.getSnapshotRetention()
+                    ?: SnapshotRetentionOption.KEEP_ALL
+
+                val max = option.maxSnapshots
+
+                if (max != null && snapshots.size > max) {
+                    val sorted = snapshots.sortedByDescending { it.timestamp }
+                    val toDelete = sorted.drop(max)
+
+                    if (toDelete.isNotEmpty()) {
+                        repository.deleteBatchSnapshots(toDelete)
+                        totalDeleted += toDelete.size
+                        Log.d("SNAPSHOT_CLEANUP", "🧹 $municipioId → Deleted ${toDelete.size} snapshots (kept $max)")
+                    }
                 } else {
-                    Log.d("SNAPSHOT_CLEANUP", "✅ No cleanup needed")
+                    Log.d("SNAPSHOT_CLEANUP", "✅ $municipioId → No cleanup needed")
                 }
-            } else {
-                Log.d("SNAPSHOT_CLEANUP", "🔒 KEEP_ALL policy selected")
             }
+
+            Log.d("SNAPSHOT_CLEANUP", "✨ Cleanup complete. Total deleted: $totalDeleted")
+
         } catch (e: Exception) {
             Log.e("SNAPSHOT_CLEANUP", "❌ Cleanup failed: ${e.message}")
         }

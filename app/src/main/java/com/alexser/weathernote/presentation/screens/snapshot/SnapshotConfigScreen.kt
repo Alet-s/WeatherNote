@@ -9,26 +9,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.domain.model.SnapshotRetentionOption
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SnapshotConfigScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SnapshotConfigScreenViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val prefs = remember { SnapshotPreferences(context) }
+    val selectedOption by viewModel.selectedOption.collectAsState()
+    val municipios by viewModel.allMunicipios.collectAsState()
+    val selectedMunicipioIds by viewModel.selectedMunicipioIds.collectAsState()
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    var selectedOption by remember {
-        mutableStateOf(prefs.getSnapshotRetention() ?: SnapshotRetentionOption.KEEP_ALL)
-    }
 
     Scaffold(
         topBar = {
@@ -63,7 +61,7 @@ fun SnapshotConfigScreen(
                     ) {
                         RadioButton(
                             selected = selectedOption == option,
-                            onClick = { selectedOption = option }
+                            onClick = { viewModel.onOptionSelected(option) }
                         )
                         Text(
                             text = when (option) {
@@ -80,16 +78,50 @@ fun SnapshotConfigScreen(
                 }
             }
 
-            Button(
-                onClick = {
-                    prefs.setSnapshotRetention(selectedOption)
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Retention setting saved.")
-                    }
-                },
-                modifier = Modifier.align(Alignment.End)
+            Text("Apply this setting to:")
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save")
+                municipios.forEach { municipio ->
+                    val selected = selectedMunicipioIds.contains(municipio.id)
+                    FilterChip(
+                        selected = selected,
+                        onClick = { viewModel.toggleMunicipio(municipio.id) },
+                        label = { Text(municipio.nombre) }
+                    )
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.saveOptionToSelectedMunicipios()
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Retention saved for selected municipios.")
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Save")
+                }
+
+                Button(
+                    onClick = {
+                        viewModel.enforceCleanup()
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Cleanup triggered.")
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Enforce now")
+                }
             }
         }
     }

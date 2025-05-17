@@ -21,4 +21,8 @@ class MunicipioRepositoryImpl @Inject constructor() : MunicipioRepository {
     override suspend fun remove(id: String) {
         municipios.value = municipios.value.filterNot { it.id == id }
     }
+
+    override suspend fun getAllSavedMunicipios(): List<SavedMunicipio> {
+        return municipios.value
+    }
 }
