@@ -33,12 +33,12 @@ class SnapshotMunicipioViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
     val uiState: StateFlow<SnapshotMunicipioUiState> = _uiState
 
-    fun loadSnapshotData(municipioId: String) {
+    fun loadSnapshotData(municipioId: String, municipioName: String) {
         viewModelScope.launch {
             val snapshots = getSnapshotReportsByMunicipio(municipioId)
             _uiState.value = _uiState.value.copy(
                 municipioId = municipioId,
-                municipioName = snapshots.firstOrNull()?.municipioName,
+                municipioName = municipioName,
                 snapshots = snapshots
             )
         }

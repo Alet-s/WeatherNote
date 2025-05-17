@@ -30,9 +30,7 @@ import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import kotlinx.coroutines.launch
 
-
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SnapshotMunicipioScreen(
     municipio: SavedMunicipio,
@@ -41,6 +39,8 @@ fun SnapshotMunicipioScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedIndexes = remember { mutableStateListOf<Int>() }
+    val selectionMode = selectedIndexes.isNotEmpty()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -75,7 +75,7 @@ fun SnapshotMunicipioScreen(
     }
 
     LaunchedEffect(municipio.id) {
-        viewModel.loadSnapshotData(municipio.id)
+        viewModel.loadSnapshotData(municipio.id, municipio.nombre)
     }
 
     Scaffold(
@@ -110,7 +110,7 @@ fun SnapshotMunicipioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (selectedReportIds.isNotEmpty()) {
+            if (selectionMode) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -137,7 +137,6 @@ fun SnapshotMunicipioScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-
                         Button(
                             onClick = {
                                 val suggestedName = "WeatherSnapshots_${System.currentTimeMillis()}.json"
@@ -159,12 +158,23 @@ fun SnapshotMunicipioScreen(
                 itemsIndexed(uiState.snapshots) { index, snapshot ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                onClick = {
+                                    if (selectionMode) toggleSelection(index)
+                                },
+                                onLongClick = {
+                                    toggleSelection(index)
+                                }
+                            )
                     ) {
-                        Checkbox(
-                            checked = selectedIndexes.contains(index),
-                            onCheckedChange = { toggleSelection(index) }
-                        )
+                        if (selectionMode) {
+                            Checkbox(
+                                checked = selectedIndexes.contains(index),
+                                onCheckedChange = { toggleSelection(index) }
+                            )
+                        }
                         SnapshotReportItem(
                             snapshot = snapshot,
                             onDelete = {

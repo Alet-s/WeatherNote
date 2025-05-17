@@ -15,12 +15,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-sealed class SnapshotUiState {
-    object Loading : SnapshotUiState()
-    data class Success(val snapshot: Snapshot) : SnapshotUiState()
-    data class Error(val message: String) : SnapshotUiState()
-}
-
 @HiltViewModel
 class MunicipiosScreenViewModel @Inject constructor(
     private val getSavedMunicipiosUseCase: GetSavedMunicipiosUseCase,
