@@ -8,7 +8,6 @@ import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
-import com.alexser.weathernote.domain.model.Snapshot
 import com.alexser.weathernote.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*

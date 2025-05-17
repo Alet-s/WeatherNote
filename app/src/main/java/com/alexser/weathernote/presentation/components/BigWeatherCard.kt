@@ -1,25 +1,23 @@
 package com.alexser.weathernote.presentation.components
 
-import WeathernoteTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.alexser.weathernote.domain.model.Snapshot
+import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
 import com.alexser.weathernote.utils.formatMunicipioName // <-- Import added
 
 @Composable
 fun BigWeatherCard(
-    report: Snapshot,
+    report: BasicWeatherForecast,
     modifier: Modifier = Modifier,
     onEditClick: () -> Unit,
     onRemoveClick: () -> Unit
@@ -68,10 +66,10 @@ fun BigWeatherCard(
                     .padding(8.dp)
             ) {
                 IconButton(onClick = onEditClick) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Home Municipio")
+                    Icon(Icons.Outlined.Edit, contentDescription = "Edit Home Municipio")
                 }
                 IconButton(onClick = onRemoveClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove Home Municipio")
+                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Remove Home Municipio")
                 }
             }
         }

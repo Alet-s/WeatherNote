@@ -1,6 +1,6 @@
 package com.alexser.weathernote.domain.model
 
-data class Snapshot(
+data class BasicWeatherForecast(
     val cityId: String,
     val city: String,
     val date: String,
@@ -8,9 +8,3 @@ data class Snapshot(
     val minTemp: Float,
     val condition: String
 )
-
-
-//Enum con los tipos de tiempo atmosférico
-enum class WeatherType {
-    SUNNY, CLOUDY, RAINY, STORMY, SNOWY
-}

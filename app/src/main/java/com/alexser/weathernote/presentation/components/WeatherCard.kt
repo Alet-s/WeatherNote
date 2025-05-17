@@ -7,17 +7,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.alexser.weathernote.domain.model.Snapshot
+import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
 import com.alexser.weathernote.utils.formatMunicipioName
 
 @Composable
 fun WeatherCard(
-    report: Snapshot,
+    report: BasicWeatherForecast,
     modifier: Modifier = Modifier,
     onSetHome: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null

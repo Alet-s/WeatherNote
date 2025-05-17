@@ -157,7 +157,7 @@ fun MunicipiosScreen(
                         }
                         is SnapshotUiState.Success -> {
                             WeatherCard(
-                                report = snapshotState.snapshot,
+                                report = snapshotState.basicWeatherForecast,
                                 modifier = Modifier.clickable {
                                     selectedMunicipio.value = municipio
                                 },
