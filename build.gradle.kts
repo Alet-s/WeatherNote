@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     //Hilt
     alias(libs.plugins.hiltAndroid) apply false
-    //Kapt
     //Firebase
     id("com.google.gms.google-services") version "4.4.2" apply false
 

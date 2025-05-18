@@ -3,7 +3,7 @@ package com.alexser.weathernote.data.remote.mapper
 import ForecastDto
 import com.alexser.weathernote.domain.model.BasicWeatherForecast
 
-fun ForecastDto.toSnapshot(municipioId: String): BasicWeatherForecast {
+fun ForecastDto.toBasicWeatherForecast(municipioId: String): BasicWeatherForecast {
     val dia = prediccion.dia.firstOrNull()
     val estado = dia?.estadoCielo?.firstOrNull { !it.descripcion.isNullOrBlank() }?.descripcion ?: "Desconocido"
     return BasicWeatherForecast(

@@ -1,30 +1,53 @@
 package com.alexser.weathernote.presentation.components
 
-// .kt
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.data.remote.model.HourlyForecastItem
+import com.alexser.weathernote.domain.model.CondicionMeteorologica
 
 @Composable
 fun HourlyForecastCard(item: HourlyForecastItem) {
+    val condition = CondicionMeteorologica.fromDescripcion(item.condition)
+
     Card(
         modifier = Modifier
-            .width(80.dp)
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .size(82.dp)
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+        border = BorderStroke(0.2.dp, Color.Black) // <-- Black outline
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = item.hour, style = MaterialTheme.typography.labelMedium)
-            Text(text = "${item.temperature}°", style = MaterialTheme.typography.titleSmall)
-            Text(text = item.condition, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = String.format("%02d:00", item.hour.toInt()),
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center
+            )
+
+            Icon(
+                painter = painterResource(id = condition.iconoRes),
+                contentDescription = condition.descripcion,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = "${item.temperature}°",
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

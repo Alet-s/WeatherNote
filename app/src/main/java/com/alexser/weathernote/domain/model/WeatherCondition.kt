@@ -27,30 +27,36 @@ sealed class CondicionMeteorologica(val codigo: String, val descripcion: String,
     object TormentaElectrica : CondicionMeteorologica("32", "Tormenta", R.drawable.wi_night_thunderstorm)
 
     companion object {
-        fun desdeCodigo(codigo: String): CondicionMeteorologica = when (codigo) {
-            "11" -> Despejado
-            "12" -> PocoNuboso
-            "13" -> Nuboso
-            "14" -> MuyNuboso
-            "15" -> Cubierto
-            "16" -> NubesAltas
-            "17" -> IntervalosConLluvia
-            "18" -> NubosoConLluvia
-            "19" -> MuyNubosoConLluvia
-            "20" -> CubiertoConLluvia
-            "21" -> Tormenta
-            "22" -> Nieblas
-            "23" -> NieblaDensa
-            "24" -> LluviaDebil
-            "25" -> LluviaModerada
-            "26" -> LluviaFuerte
-            "27" -> Chubascos
-            "28" -> ChubascosFuertes
-            "29" -> Nieve
-            "30" -> NieveDebil
-            "31" -> Granizo
-            "32" -> TormentaElectrica
-            else -> Despejado // Fallback
+        fun fromDescripcion(descripcion: String): CondicionMeteorologica {
+            return when (descripcion.trim().lowercase()) {
+                "despejado" -> Despejado
+                "poco nuboso" -> PocoNuboso
+                "nuboso" -> Nuboso
+                "muy nuboso" -> MuyNuboso
+                "cubierto" -> Cubierto
+                "nubes altas" -> NubesAltas
+                "nieblas" -> Nieblas
+                "niebla densa" -> NieblaDensa
+                "granizo" -> Granizo
+                "tormenta" -> TormentaElectrica
+                "cubierto con tormenta" -> Tormenta
+                "cubierto con lluvia" -> CubiertoConLluvia
+                "muy nuboso con lluvia" -> MuyNubosoConLluvia
+                "nuboso con lluvia" -> NubosoConLluvia
+                "intervalos nubosos" -> Nuboso
+                "intervalos nubosos con lluvia" -> IntervalosConLluvia
+                "intervalos nubosos con lluvia escasa" -> IntervalosConLluvia
+                "intervalos nubosos con tormenta y lluvia escasa" -> Tormenta
+                "lluvia débil" -> LluviaDebil
+                "lluvia moderada" -> LluviaModerada
+                "lluvia fuerte" -> LluviaFuerte
+                "chubascos" -> Chubascos
+                "chubascos fuertes" -> ChubascosFuertes
+                "nieve" -> Nieve
+                "nieve débil" -> NieveDebil
+                else -> Despejado
+            }
         }
     }
+
 }

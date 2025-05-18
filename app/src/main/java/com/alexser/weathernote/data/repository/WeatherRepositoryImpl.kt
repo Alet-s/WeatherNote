@@ -10,8 +10,8 @@ class WeatherRepositoryImpl @Inject constructor(
     private val aemetService: AemetService
 ) : WeatherRepository {
 
-    override suspend fun getSnapshot(municipioId: String): BasicWeatherForecast {
-        return aemetService.getSnapshot(municipioId)
+    override suspend fun getBasicWeatherForecast(municipioId: String): BasicWeatherForecast {
+        return aemetService.getBasicWeatherForecast(municipioId)
     }
 
     override suspend fun getHourlyForecast(municipioId: String): List<HourlyForecastDto> {

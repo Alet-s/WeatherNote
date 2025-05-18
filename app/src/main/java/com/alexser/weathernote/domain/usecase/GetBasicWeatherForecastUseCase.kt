@@ -9,7 +9,7 @@ class GetBasicWeatherForecastUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(municipioId: String): Result<BasicWeatherForecast> {
         return try {
-            val snapshot = repository.getSnapshot(municipioId)
+            val snapshot = repository.getBasicWeatherForecast(municipioId)
             Result.success(snapshot)
         } catch (e: Exception) {
             Result.failure(e)
