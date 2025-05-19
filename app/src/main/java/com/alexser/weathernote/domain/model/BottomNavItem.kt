@@ -5,6 +5,12 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.Watch
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.material.icons.rounded.Place
+import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material.icons.rounded.Watch
+import androidx.compose.material.icons.sharp.House
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class BottomNavItem(
@@ -14,8 +20,9 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Home", "home", Icons.Default.Home),
-    BottomNavItem("Municipios", "municipios", Icons.Default.CheckCircle),
-    BottomNavItem("Por hora", "municipios_horaria", Icons.Default.MailOutline),
-    BottomNavItem("Snapshots", "snapshot_municipios_list", Icons.Default.List)
+    BottomNavItem("Home", "home", Icons.Sharp.House),
+    BottomNavItem("Municipios", "municipios", Icons.Rounded.Place),
+    BottomNavItem("Por hora", "municipios_horaria", Icons.Rounded.Watch),
+    BottomNavItem("Snapshots", "snapshot_municipios_list", Icons.Rounded.PhotoCamera),
+    BottomNavItem("Visor","visor", Icons.Rounded.Tv)
 )

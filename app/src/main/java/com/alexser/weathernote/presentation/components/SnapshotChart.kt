@@ -1,67 +1,92 @@
 package com.alexser.weathernote.presentation.components
 
+import android.graphics.Color
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.alexser.weathernote.domain.model.SnapshotReport
-import com.github.tehras.charts.line.LineChart
-import com.github.tehras.charts.line.LineChartData
-
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
 fun SnapshotChart(
     snapshots: List<SnapshotReport>,
     selected: Map<String, Boolean>
 ) {
-    val dateLabels = snapshots.map { it.timestamp.substringBefore("T") }
+    val context = LocalContext.current
 
-    val lines = mutableListOf<LineChartData>()
+    val metrics = mapOf(
+        "Temperature" to Color.RED,
+        "Humidity" to Color.BLUE,
+        "Precipitation" to Color.CYAN,
+        "Wind Speed" to Color.GREEN
+    )
 
-    if (selected["Temperature"] == true) {
-        lines += LineChartData(
-            points = snapshots.mapIndexedNotNull { index, s ->
-                s.temperature?.toFloat()?.let { LineChartData.Point(it, index.toFloat()) }
-            },
-            lineColor = MaterialTheme.colorScheme.primary
-        )
-    }
-    if (selected["Humidity"] == true) {
-        lines += LineChartData(
-            points = snapshots.mapIndexedNotNull { index, s ->
-                s.humidity?.toFloat()?.let { LineChartData.Point(it, index.toFloat()) }
-            },
-            lineColor = MaterialTheme.colorScheme.secondary
-        )
-    }
-    if (selected["Precipitation"] == true) {
-        lines += LineChartData(
-            points = snapshots.mapIndexedNotNull { index, s ->
-                s.precipitation?.toFloat()?.let { LineChartData.Point(it, index.toFloat()) }
-            },
-            lineColor = MaterialTheme.colorScheme.tertiary
-        )
-    }
-    if (selected["Wind Speed"] == true) {
-        lines += LineChartData(
-            points = snapshots.mapIndexedNotNull { index, s ->
-                s.windSpeed?.toFloat()?.let { LineChartData.Point(it, index.toFloat()) }
-            },
-            lineColor = MaterialTheme.colorScheme.error
-        )
-    }
+    val selectedMetrics = selected.filter { it.value }.keys
+    if (selectedMetrics.isEmpty()) return
 
-    if (lines.isNotEmpty()) {
-        LineChart(
-            lines = lines,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        )
-    } else {
-        Text("Selecciona al menos un parámetro para visualizar el gráfico.")
-    }
+    val dates = snapshots.map { it.timestamp.substringBefore("T") }
+
+    AndroidView(
+        factory = {
+            LineChart(context).apply {
+                val dataSets = selectedMetrics.mapNotNull { metric ->
+                    val entries = snapshots.mapIndexedNotNull { index, snapshot ->
+                        val value = when (metric) {
+                            "Temperature" -> snapshot.temperature?.toFloat()
+                            "Humidity" -> snapshot.humidity?.toFloat()
+                            "Precipitation" -> snapshot.precipitation?.toFloat()
+                            "Wind Speed" -> snapshot.windSpeed?.toFloat()
+                            else -> null
+                        }
+                        value?.let { Entry(index.toFloat(), it) }
+                    }
+
+                    if (entries.isNotEmpty()) {
+                        LineDataSet(entries, metric).apply {
+                            color = metrics[metric] ?: Color.BLACK
+                            setCircleColor(color)
+                            lineWidth = 2f
+                            circleRadius = 4f
+                            valueTextSize = 10f
+                            setDrawValues(false)
+                        }
+                    } else null
+                }
+
+                data = LineData(dataSets)
+
+                // Description
+                description = Description().apply {
+                    text = "Selected metrics over time"
+                    textSize = 12f
+                }
+
+                // X-Axis: use dates
+                xAxis.granularity = 1f
+                xAxis.setDrawGridLines(false)
+                xAxis.valueFormatter = object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        val index = value.toInt()
+                        return dates.getOrNull(index) ?: ""
+                    }
+                }
+
+                axisRight.isEnabled = false
+                legend.isEnabled = true
+                animateX(500)
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+    )
 }

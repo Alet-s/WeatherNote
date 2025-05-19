@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexser.weathernote.domain.model.SavedMunicipio
-import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.presentation.components.LoadingIndicator
 import com.alexser.weathernote.presentation.components.MunicipioDropdown
 import com.alexser.weathernote.presentation.components.MetricsCheckboxes
@@ -44,6 +43,7 @@ fun VisorScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Text("Visualización de Datos", style = MaterialTheme.typography.titleLarge)
         MunicipioDropdown(savedMunicipios, selectedMunicipio) {
             selectedMunicipio = it
         }
@@ -53,7 +53,10 @@ fun VisorScreen(
         if (uiState.snapshots.isEmpty()) {
             LoadingIndicator()
         } else {
-            SnapshotChart(uiState.snapshots, selectedMetrics)
+            SnapshotChart(
+                snapshots = uiState.snapshots,
+                selected = selectedMetrics
+            )
         }
     }
 }
