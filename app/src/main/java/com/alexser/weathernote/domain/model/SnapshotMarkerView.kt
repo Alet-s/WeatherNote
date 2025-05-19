@@ -29,13 +29,27 @@ class SnapshotMarkerView(
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
         try {
             val label = e?.x?.let { labelMap[it] }
-            val value = e?.y?.toInt()?.toString() ?: "?"
-            textView.text = if (label != null) "$value • $label" else value
+            val value = e?.y?.toInt() ?: return
+            val metric = highlight?.dataSetIndex?.let { index ->
+                chartView.data.getDataSetByIndex(index)?.label
+            }
+
+            val unit = when (metric) {
+                "Temperature" -> "°C"
+                "Humidity" -> "%"
+                "Precipitation" -> "mm"
+                "Wind Speed" -> "km/h"
+                else -> ""
+            }
+
+            val text = if (label != null) "$value$unit • $label" else "$value$unit"
+            textView.text = text
             super.refreshContent(e, highlight)
-        } catch (e: Exception) {
-            textView.text = "Error"
+        } catch (_: Exception) {
+            textView.text = "?"
         }
     }
+
 
     override fun getOffset(): MPPointF {
         return MPPointF(-(width / 2f), -height.toFloat())

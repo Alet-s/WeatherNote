@@ -19,7 +19,9 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 @Composable
 fun SnapshotChart(
     snapshots: List<SnapshotReport>,
-    selected: Map<String, Boolean>
+    selected: Map<String, Boolean>,
+    showRawValues: Boolean,
+
 ) {
     val context = LocalContext.current
 
@@ -31,7 +33,7 @@ fun SnapshotChart(
     )
 
     val dataSets = selected.entries.filter { it.value }.mapNotNull { (metric, _) ->
-        val entries = snapshots.mapIndexedNotNull { index, snapshot ->
+        val rawValues = snapshots.mapIndexedNotNull { index, snapshot ->
             val value = when (metric) {
                 "Temperature" -> snapshot.temperature?.toFloat()
                 "Humidity" -> snapshot.humidity?.toFloat()
@@ -39,18 +41,33 @@ fun SnapshotChart(
                 "Wind Speed" -> snapshot.windSpeed?.toFloat()
                 else -> null
             }
-            value?.let { Entry(index.toFloat(), it) }
+            value?.let { index to it }
         }
 
-        if (entries.isNotEmpty()) {
-            LineDataSet(entries, metric).apply {
-                color = metricColors[metric] ?: Color.BLACK
-                setCircleColor(color)
-                lineWidth = 2f
-                circleRadius = 3f
-                setDrawValues(false)
+        val values = rawValues.map { it.second }
+        val min = values.minOrNull() ?: return@mapNotNull null
+        val max = values.maxOrNull() ?: return@mapNotNull null
+        val range = (max - min).takeIf { it > 0 } ?: 1f
+
+        val entries = if (showRawValues) {
+            rawValues.map { (index, value) ->
+                Entry(index.toFloat(), value)
             }
-        } else null
+        } else {
+            rawValues.map { (index, value) ->
+                Entry(index.toFloat(), ((value - min) / range) * 100f).apply {
+                    data = value // store original value for tooltip
+                }
+            }
+        }
+
+        LineDataSet(entries, metric).apply {
+            color = metricColors[metric] ?: Color.BLACK
+            setCircleColor(color)
+            lineWidth = 2f
+            circleRadius = 3f
+            setDrawValues(false)
+        }
     }
 
     AndroidView(
@@ -62,7 +79,10 @@ fun SnapshotChart(
 
             chart.apply {
                 description = Description().apply {
-                    text = "Evolución meteorológica"
+                    text = if (showRawValues)
+                        "Evolución meteorológica (valores reales)"
+                    else
+                        "Evolución meteorológica (% del rango)"
                     textSize = 12f
                 }
                 axisRight.isEnabled = false
@@ -85,8 +105,8 @@ fun SnapshotChart(
             }
         },
         update = { chart ->
-            chart.highlightValue(null) // 🔒 Clear any active marker
-            chart.marker = null        // 🔒 Detach old marker
+            chart.highlightValue(null)
+            chart.marker = null
 
             val labelMap = snapshots.mapIndexed { index, it ->
                 index.toFloat() to it.timestamp.substringBefore("T")
@@ -97,6 +117,13 @@ fun SnapshotChart(
             val newMarker = SnapshotMarkerView(chart.context, labelMap)
             newMarker.chartView = chart
             chart.marker = newMarker
+
+            // ✅ Dynamic description update
+            chart.description.text = if (showRawValues) {
+                "Evolución meteorológica (valores reales)"
+            } else {
+                "Evolución meteorológica (% del rango)"
+            }
 
             chart.invalidate()
         },

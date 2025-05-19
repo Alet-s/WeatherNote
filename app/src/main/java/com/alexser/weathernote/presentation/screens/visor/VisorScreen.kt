@@ -3,6 +3,7 @@ package com.alexser.weathernote.presentation.screens.visor
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +20,7 @@ fun VisorScreen(
     viewModel: SnapshotMunicipioViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showRawValues by remember { mutableStateOf(false) }
 
     val selectedMetrics = remember {
         mutableStateMapOf(
@@ -62,12 +64,26 @@ fun VisorScreen(
                 }
             )
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Mostrar valores reales")
+                Switch(
+                    checked = showRawValues,
+                    onCheckedChange = { showRawValues = it }
+                )
+            }
+
             SnapshotChart(
                 snapshots = uiState.snapshots.slice(
                     selectedRange.start.toInt()..selectedRange.endInclusive.toInt()
                 ),
-                selected = selectedMetrics
+                selected = selectedMetrics,
+                showRawValues = showRawValues
             )
+
+
         }
     }
 }

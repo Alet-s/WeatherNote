@@ -6,8 +6,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun SnapshotRangeSelector(
@@ -31,8 +29,8 @@ fun SnapshotRangeSelector(
             value = selectedRange,
             onValueChange = onRangeChange,
             valueRange = 0f..(totalCount - 1).toFloat(),
-            steps = if (totalCount > 2) totalCount - 2 else 0,
-            modifier = Modifier.fillMaxWidth()
+            steps = if (totalCount > 2) totalCount - 1 else 0,
+            modifier = Modifier.fillMaxWidth().height(24.dp)
         )
     }
 }
