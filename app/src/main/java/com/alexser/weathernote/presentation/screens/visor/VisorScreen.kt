@@ -10,6 +10,7 @@ import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.presentation.components.LoadingIndicator
 import com.alexser.weathernote.presentation.components.MetricsCheckboxes
 import com.alexser.weathernote.presentation.components.SnapshotChart
+import com.alexser.weathernote.presentation.components.SnapshotRangeSelector
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipioViewModel
 
 @Composable
@@ -26,6 +27,11 @@ fun VisorScreen(
             "Precipitation" to false,
             "Wind Speed" to false
         )
+    }
+
+    val snapshotCount = uiState.snapshots.size
+    var selectedRange by remember(snapshotCount) {
+        mutableStateOf(0f..(snapshotCount - 1).coerceAtLeast(0).toFloat())
     }
 
     LaunchedEffect(municipio.id) {
@@ -47,8 +53,19 @@ fun VisorScreen(
         } else {
             Spacer(modifier = Modifier.height(24.dp))
 
+            SnapshotRangeSelector(
+                totalCount = snapshotCount,
+                selectedRange = selectedRange,
+                onRangeChange = { selectedRange = it },
+                getDateLabel = { index ->
+                    uiState.snapshots.getOrNull(index)?.timestamp?.substringBefore("T") ?: "-"
+                }
+            )
+
             SnapshotChart(
-                snapshots = uiState.snapshots,
+                snapshots = uiState.snapshots.slice(
+                    selectedRange.start.toInt()..selectedRange.endInclusive.toInt()
+                ),
                 selected = selectedMetrics
             )
         }

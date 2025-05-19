@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="6dp"
+    android:background="@android:color/holo_blue_dark"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/marker_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:text="Tooltip"
+        android:layout_margin="4dp"/>
+
+</LinearLayout>
+    <!--Archivo layout para tooltip de gráficos generados en SnapshotChart-->

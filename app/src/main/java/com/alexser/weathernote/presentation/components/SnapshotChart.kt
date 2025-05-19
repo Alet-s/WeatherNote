@@ -23,67 +23,82 @@ fun SnapshotChart(
 ) {
     val context = LocalContext.current
 
-    val metrics = mapOf(
+    val metricColors = mapOf(
         "Temperature" to Color.RED,
         "Humidity" to Color.BLUE,
         "Precipitation" to Color.CYAN,
         "Wind Speed" to Color.GREEN
     )
 
-    val selectedMetrics = selected.filter { it.value }.keys
-    if (selectedMetrics.isEmpty()) return
+    val dataSets = selected.entries.filter { it.value }.mapNotNull { (metric, _) ->
+        val entries = snapshots.mapIndexedNotNull { index, snapshot ->
+            val value = when (metric) {
+                "Temperature" -> snapshot.temperature?.toFloat()
+                "Humidity" -> snapshot.humidity?.toFloat()
+                "Precipitation" -> snapshot.precipitation?.toFloat()
+                "Wind Speed" -> snapshot.windSpeed?.toFloat()
+                else -> null
+            }
+            value?.let { Entry(index.toFloat(), it) }
+        }
 
-    val dates = snapshots.map { it.timestamp.substringBefore("T") }
+        if (entries.isNotEmpty()) {
+            LineDataSet(entries, metric).apply {
+                color = metricColors[metric] ?: Color.BLACK
+                setCircleColor(color)
+                lineWidth = 2f
+                circleRadius = 3f
+                setDrawValues(false)
+            }
+        } else null
+    }
 
     AndroidView(
         factory = {
-            LineChart(context).apply {
-                val dataSets = selectedMetrics.mapNotNull { metric ->
-                    val entries = snapshots.mapIndexedNotNull { index, snapshot ->
-                        val value = when (metric) {
-                            "Temperature" -> snapshot.temperature?.toFloat()
-                            "Humidity" -> snapshot.humidity?.toFloat()
-                            "Precipitation" -> snapshot.precipitation?.toFloat()
-                            "Wind Speed" -> snapshot.windSpeed?.toFloat()
-                            else -> null
-                        }
-                        value?.let { Entry(index.toFloat(), it) }
-                    }
+            val chart = LineChart(context)
+            val labelMap = snapshots.mapIndexed { index, it ->
+                index.toFloat() to it.timestamp.substringBefore("T")
+            }.toMap()
 
-                    if (entries.isNotEmpty()) {
-                        LineDataSet(entries, metric).apply {
-                            color = metrics[metric] ?: Color.BLACK
-                            setCircleColor(color)
-                            lineWidth = 2f
-                            circleRadius = 4f
-                            valueTextSize = 10f
-                            setDrawValues(false)
-                        }
-                    } else null
-                }
-
-                data = LineData(dataSets)
-
-                // Description
+            chart.apply {
                 description = Description().apply {
-                    text = "Selected metrics over time"
+                    text = "Evolución meteorológica"
                     textSize = 12f
                 }
-
-                // X-Axis: use dates
+                axisRight.isEnabled = false
                 xAxis.granularity = 1f
                 xAxis.setDrawGridLines(false)
+                xAxis.labelRotationAngle = -45f
+                xAxis.textSize = 10f
+                legend.isEnabled = true
+                animateX(500)
+
                 xAxis.valueFormatter = object : ValueFormatter() {
                     override fun getFormattedValue(value: Float): String {
-                        val index = value.toInt()
-                        return dates.getOrNull(index) ?: ""
+                        return labelMap[value] ?: ""
                     }
                 }
 
-                axisRight.isEnabled = false
-                legend.isEnabled = true
-                animateX(500)
+                val marker = SnapshotMarkerView(context, labelMap)
+                marker.chartView = this
+                this.marker = marker
             }
+        },
+        update = { chart ->
+            chart.highlightValue(null) // 🔒 Clear any active marker
+            chart.marker = null        // 🔒 Detach old marker
+
+            val labelMap = snapshots.mapIndexed { index, it ->
+                index.toFloat() to it.timestamp.substringBefore("T")
+            }.toMap()
+
+            chart.data = LineData(dataSets)
+
+            val newMarker = SnapshotMarkerView(chart.context, labelMap)
+            newMarker.chartView = chart
+            chart.marker = newMarker
+
+            chart.invalidate()
         },
         modifier = Modifier
             .fillMaxWidth()
