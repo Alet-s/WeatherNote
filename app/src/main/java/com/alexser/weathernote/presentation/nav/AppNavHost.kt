@@ -2,6 +2,7 @@ package com.alexser.weathernote.presentation.nav
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -18,8 +19,7 @@ import com.alexser.weathernote.presentation.screens.snapshot.SnapshotConfigScree
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipioScreen
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipiosListScreen
 import com.alexser.weathernote.presentation.screens.visor.VisorScreen
-import androidx.compose.runtime.getValue
-
+import com.alexser.weathernote.presentation.screens.visor.VisorMunicipioListScreen
 
 @Composable
 fun AppNavHost(
@@ -81,16 +81,29 @@ fun AppNavHost(
             )
         }
 
-        // ✅ Configuración de Snapshot
         composable("snapshotConfig") {
             SnapshotConfigScreen(navController = navController)
         }
 
-        composable("visor") {
-            val viewModel = hiltViewModel<MunicipiosScreenViewModel>()
-            val municipios by viewModel.municipios.collectAsState()
-            VisorScreen(savedMunicipios = municipios)
+        // ✅ New: Visor Municipio List (Main entry to visor flow)
+        composable("visor_municipios") {
+            VisorMunicipioListScreen(navController = navController)
         }
 
+        // ✅ New: VisorScreen proper, receives municipioId and municipioName
+        composable(
+            route = "visor/{municipioId}/{municipioNombre}",
+            arguments = listOf(
+                navArgument("municipioId") { defaultValue = "" },
+                navArgument("municipioNombre") { defaultValue = "Desconocido" }
+            )
+        ) { backStackEntry ->
+            val municipioId = backStackEntry.arguments?.getString("municipioId") ?: return@composable
+            val municipioNombre = backStackEntry.arguments?.getString("municipioNombre") ?: "Desconocido"
+
+            VisorScreen(
+                municipio = SavedMunicipio(id = municipioId, nombre = municipioNombre)
+            )
+        }
     }
 }

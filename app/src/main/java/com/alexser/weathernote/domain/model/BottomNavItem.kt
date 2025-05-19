@@ -24,5 +24,5 @@ val bottomNavItems = listOf(
     BottomNavItem("Municipios", "municipios", Icons.Rounded.Place),
     BottomNavItem("Por hora", "municipios_horaria", Icons.Rounded.Watch),
     BottomNavItem("Snapshots", "snapshot_municipios_list", Icons.Rounded.PhotoCamera),
-    BottomNavItem("Visor","visor", Icons.Rounded.Tv)
+    BottomNavItem("Visor","visor_municipios", Icons.Rounded.Tv)
 )
