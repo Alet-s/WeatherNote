@@ -2,14 +2,19 @@ package com.alexser.weathernote.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.SnapshotReport
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 
 @Composable
 fun SnapshotReportItem(
@@ -37,9 +42,40 @@ fun SnapshotReportItem(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text("📅 ${snapshot.timestamp}")
-                Text("🌡️ ${snapshot.temperature ?: "-"}°C | 💧 ${snapshot.humidity ?: "-"}%")
-                Text("💨 ${snapshot.windSpeed ?: "-"} km/h | ☁️ ${snapshot.condition ?: "-"}")
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(snapshot.timestamp)
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Thermostat, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("${snapshot.temperature ?: "-"}°C")
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Icon(Icons.Default.WaterDrop, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("${snapshot.humidity ?: "-"}%")
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Air, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("${snapshot.windSpeed ?: "-"} km/h")
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(snapshot.condition ?: "-")
+                }
             }
 
             if (showCheckbox && onCheckToggle != null) {

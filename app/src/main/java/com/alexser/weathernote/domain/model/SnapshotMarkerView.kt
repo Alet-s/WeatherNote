@@ -8,7 +8,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.github.mikephil.charting.charts.LineChart
-import com.alexser.weathernote.domain.model.SnapshotReport
 
 class SnapshotMarkerView(
     context: Context,
@@ -19,12 +18,6 @@ class SnapshotMarkerView(
     private val textView: TextView = findViewById(R.id.marker_text)
 
     internal var labelMap: Map<Float, String> = snapshotMap
-
-    fun updateLabelsFromSnapshots(snapshots: List<SnapshotReport>) {
-        labelMap = snapshots.mapIndexed { index, snapshot ->
-            index.toFloat() to snapshot.timestamp.substringBefore("T")
-        }.toMap()
-    }
 
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
         try {

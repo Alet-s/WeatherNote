@@ -6,8 +6,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 
 @Composable
 fun SignupScreen(
@@ -28,7 +30,7 @@ fun SignupScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Create Account",
+            text = stringResource(R.string.crear_cuenta),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 24.dp)
         )
@@ -36,7 +38,7 @@ fun SignupScreen(
         OutlinedTextField(
             value = uiState.email,
             onValueChange = viewModel::onEmailChange,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.correo_electronico)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -45,7 +47,7 @@ fun SignupScreen(
         OutlinedTextField(
             value = uiState.password,
             onValueChange = viewModel::onPasswordChange,
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -55,7 +57,7 @@ fun SignupScreen(
         OutlinedTextField(
             value = uiState.confirmPassword,
             onValueChange = viewModel::onConfirmPasswordChange,
-            label = { Text("Confirm Password") },
+            label = { Text(stringResource(R.string.confirmar_pass)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -67,7 +69,7 @@ fun SignupScreen(
             enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Register")
+            Text(stringResource(R.string.registrarse))
         }
 
         if (uiState.error != null) {

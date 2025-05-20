@@ -118,7 +118,6 @@ fun SnapshotChart(
             newMarker.chartView = chart
             chart.marker = newMarker
 
-            // ✅ Dynamic description update
             chart.description.text = if (showRawValues) {
                 "Evolución meteorológica (valores reales)"
             } else {

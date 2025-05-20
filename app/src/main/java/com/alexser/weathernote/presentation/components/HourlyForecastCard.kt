@@ -21,7 +21,7 @@ fun HourlyForecastCard(item: HourlyForecastItem) {
         modifier = Modifier
             .size(82.dp)
             .padding(horizontal = 4.dp, vertical = 4.dp),
-        border = BorderStroke(0.2.dp, Color.Black) // <-- Black outline
+        border = BorderStroke(0.2.dp, Color.Black)
     ) {
         Column(
             modifier = Modifier

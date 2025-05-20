@@ -12,8 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.presentation.components.HourlyForecastDialog
@@ -40,6 +42,8 @@ fun MunicipiosScreen(
 
     var nameInput by remember { mutableStateOf(TextFieldValue()) }
     var showSearch by remember { mutableStateOf(false) }
+    val promptTextAddMuni = stringResource(R.string.usa_barra_anyadir_muni)
+
 
     val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
     val currentFullItem: HourlyForecastFullItem? =
@@ -63,7 +67,7 @@ fun MunicipiosScreen(
 
     LaunchedEffect(showPrompt) {
         if (showPrompt) {
-            snackbarHostState.showSnackbar("Use the search bar to add a municipio.")
+            snackbarHostState.showSnackbar(promptTextAddMuni)
         }
     }
 
@@ -85,13 +89,13 @@ fun MunicipiosScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Saved Municipios", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.munis_guardados), style = MaterialTheme.typography.titleLarge)
             Row {
                 IconButton(onClick = { showSearch = !showSearch }) {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Icon(Icons.Default.Search, contentDescription = stringResource(R.string.buscar))
                 }
                 IconButton(onClick = { viewModel.reloadFromFirestore() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reload")
+                    Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.recargar))
                 }
             }
         }
@@ -107,7 +111,7 @@ fun MunicipiosScreen(
                     OutlinedTextField(
                         value = nameInput,
                         onValueChange = { nameInput = it },
-                        label = { Text("Municipio name") },
+                        label = { Text(stringResource(R.string.nombre_muni)) },
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -118,7 +122,7 @@ fun MunicipiosScreen(
                             showSearch = false
                         }
                     }) {
-                        Text("Add")
+                        Text(stringResource(R.string.anyadir))
                     }
                 }
 
@@ -177,19 +181,19 @@ fun MunicipiosScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "Error loading data: ${snapshotState.message}",
+                                    text = "${stringResource(R.string.error_cargar_datos)} ${snapshotState.message}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.error
                                 )
                                 TextButton(onClick = {
                                     viewModel.fetchSnapshot(municipio.id)
                                 }) {
-                                    Text("Retry")
+                                    Text(stringResource(R.string.reintentar))
                                 }
                             }
                         }
                         null -> {
-                            Text("No state")
+                            Text(stringResource(R.string.sin_estado))
                         }
                     }
                 }
@@ -207,11 +211,11 @@ fun MunicipiosScreen(
                     onDismissRequest = { selectedMunicipio.value = null },
                     confirmButton = {
                         TextButton(onClick = { selectedMunicipio.value = null }) {
-                            Text("Close")
+                            Text(stringResource(R.string.cerrar))
                         }
                     },
-                    title = { Text("Loading forecast...") },
-                    text = { Text("Please wait while we fetch the current hour's data.") }
+                    title = { Text(stringResource(R.string.cargando_prediccion)) },
+                    text = { Text(stringResource(R.string.porfavor_espera_prediccion)) }
                 )
             }
         }
@@ -219,16 +223,16 @@ fun MunicipiosScreen(
         municipioToDelete.value?.let { municipio ->
             AlertDialog(
                 onDismissRequest = { municipioToDelete.value = null },
-                title = { Text("Delete ${municipio.nombre}?") },
+                title = { Text("${stringResource(R.string.eliminar)} ${municipio.nombre}?") },
                 text = {
-                    Text("Do you also want to delete all snapshots for this municipio?")
+                    Text(stringResource(R.string.borrar_tambien_snaps))
                 },
                 confirmButton = {
                     TextButton(onClick = {
                         viewModel.removeMunicipioWithOption(municipio.id, deleteSnapshots = true)
                         municipioToDelete.value = null
                     }) {
-                        Text("Delete with snapshots")
+                        Text(stringResource(R.string.borrar_con_snaps))
                     }
                 },
                 dismissButton = {
@@ -236,7 +240,7 @@ fun MunicipiosScreen(
                         viewModel.removeMunicipioWithOption(municipio.id, deleteSnapshots = false)
                         municipioToDelete.value = null
                     }) {
-                        Text("Keep snapshots")
+                        Text(stringResource(R.string.mantener_snapshots))
                     }
                 }
             )

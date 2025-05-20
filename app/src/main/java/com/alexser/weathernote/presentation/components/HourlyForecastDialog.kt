@@ -7,7 +7,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 
 @Composable
@@ -22,17 +24,17 @@ fun HourlyForecastDialog(
                 Text("Close")
             }
         },
-        title = { Text("Weather at ${data.hour}:00") },
+        title = { Text("${stringResource(R.string.tiempo_a_las)} ${data.hour}:00") },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                InfoRow("Temperature", "${data.temperature ?: "--"}°C")
-                InfoRow("Feels like", "${data.feelsLike ?: "--"}°C")
-                InfoRow("Condition", data.condition ?: "--")
-                InfoRow("Precipitation", "${data.precipitation ?: 0.0} mm")
-                InfoRow("Snow", "${data.snow ?: 0.0} mm")
-                InfoRow("Humidity", "${data.humidity ?: "--"}%")
-                InfoRow("Wind", "${data.windSpeed ?: "--"} km/h ${data.windDirection ?: ""}")
-                InfoRow("Max gust", "${data.maxGust ?: "--"} km/h")
+                InfoRow(stringResource(R.string.temperatura), "${data.temperature ?: "--"}°C")
+                InfoRow(stringResource(R.string.sensacion_termica), "${data.feelsLike ?: "--"}°C")
+                InfoRow(stringResource(R.string.condicion_meteo), data.condition ?: "--")
+                InfoRow(stringResource(R.string.precipitacion), "${data.precipitation ?: 0.0} mm")
+                InfoRow(stringResource(R.string.nieve), "${data.snow ?: 0.0} mm")
+                InfoRow(stringResource(R.string.humedad_relativa), "${data.humidity ?: "--"}%")
+                InfoRow(stringResource(R.string.velocidad_viento), "${data.windSpeed ?: "--"} km/h ${data.windDirection ?: ""}")
+                InfoRow(stringResource(R.string.racha_max), "${data.maxGust ?: "--"} km/h")
             }
         }
     )

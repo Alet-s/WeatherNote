@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SavedMunicipio
 
 @Composable
@@ -22,7 +24,7 @@ fun MunicipioDropdown(
 
     Box {
         Button(onClick = { expanded = true }) {
-            Text(selected?.nombre ?: "Selecciona un municipio")
+            Text(selected?.nombre ?: stringResource(R.string.selecciona_municipio))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             municipios.forEach {

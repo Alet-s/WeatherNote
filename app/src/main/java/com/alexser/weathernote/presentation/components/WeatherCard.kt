@@ -11,7 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.domain.model.CondicionMeteorologica
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
@@ -34,7 +36,6 @@ fun WeatherCard(
             .padding(8.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            // Action icons at top right
             if (onSetHome != null || onDelete != null) {
                 Row(
                     modifier = Modifier
@@ -44,12 +45,12 @@ fun WeatherCard(
                 ) {
                     if (onSetHome != null) {
                         IconButton(onClick = onSetHome) {
-                            Icon(Icons.Default.Home, contentDescription = "Set as Home")
+                            Icon(Icons.Default.Home, contentDescription = stringResource(R.string.config_como_principal))
                         }
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.eliminar))
                         }
                     }
                 }

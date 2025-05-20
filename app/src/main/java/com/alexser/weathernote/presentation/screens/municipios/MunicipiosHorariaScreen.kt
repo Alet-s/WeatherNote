@@ -13,8 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.alexser.weathernote.R
 import com.alexser.weathernote.presentation.components.HourlyForecastRow
 import com.alexser.weathernote.utils.formatMunicipioName
 
@@ -38,7 +40,7 @@ fun MunicipiosHorariaScreen(
                     Text(
                         text = selectedMunicipioId?.let { id ->
                             municipios.find { it.id == id }?.let { formatMunicipioName(it.nombre) }
-                        } ?: "Predicción horaria"
+                        } ?: stringResource(R.string.prediccion_horaria)
                     )
                 }
             )
@@ -53,7 +55,7 @@ fun MunicipiosHorariaScreen(
         ) {
             if (selectedMunicipioId == null) {
                 Text(
-                    text = "Selecciona un municipio para ver su predicción horaria",
+                    text = stringResource(R.string.selecciona_ver_pred_horaria),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -76,7 +78,7 @@ fun MunicipiosHorariaScreen(
                 val forecastList = hourlyForecasts[selectedMunicipioId].orEmpty()
 
                 Text(
-                    text = "Predicción por hora",
+                    text = stringResource(R.string.prediccion_horaria),
                     style = MaterialTheme.typography.titleMedium
                 )
 
@@ -88,7 +90,7 @@ fun MunicipiosHorariaScreen(
                 ) {
                     if (forecastList.isEmpty()) {
                         Text(
-                            "No hay datos disponibles.",
+                            stringResource(R.string.no_datos_disponibles),
                             modifier = Modifier.padding(16.dp)
                         )
                     } else {
@@ -114,7 +116,7 @@ fun MunicipiosHorariaScreen(
                         contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 ) {
-                    Text("Volver a la lista")
+                    Text(stringResource(R.string.volver_lista))
                 }
             }
         }

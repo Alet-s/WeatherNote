@@ -8,9 +8,11 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alexser.weathernote.R
 import com.alexser.weathernote.presentation.components.MunicipioSnapshotListCard
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 
@@ -28,7 +30,7 @@ fun SnapshotMunicipiosListScreen(
                 title = { Text("Snapshots") },
                 actions = {
                     IconButton(onClick = { navController.navigate("snapshotConfig") }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Configuración")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.configuracion))
                     }
                 }
             )

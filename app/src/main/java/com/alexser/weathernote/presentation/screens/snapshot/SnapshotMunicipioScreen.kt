@@ -25,12 +25,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import kotlinx.coroutines.launch
@@ -54,6 +56,11 @@ fun SnapshotMunicipioScreen(
         .mapIndexedNotNull { index, snapshot ->
             if (selectedIndexes.contains(index)) snapshot.reportId else null
         }
+    //Strings con resources precargados
+    val succesFileSaving = stringResource(R.string.archivo_guardado_exito)
+    val cancelledMessage = stringResource(R.string.cancelado_usuario)
+    val xErasedSnapshots = stringResource(R.string.snaps_borrados)
+    val snapBorradoMessage = stringResource(R.string.snap_borrado)
 
     val createDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
@@ -61,11 +68,11 @@ fun SnapshotMunicipioScreen(
             if (uri != null) {
                 viewModel.saveSnapshotJsonToUri(context, uri, selectedReportIds)
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar("Archivo guardado con éxito.")
+                    snackbarHostState.showSnackbar(succesFileSaving)
                 }
             } else {
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar("Cancelado por el usuario.")
+                    snackbarHostState.showSnackbar(cancelledMessage)
                 }
             }
         }
@@ -89,7 +96,7 @@ fun SnapshotMunicipioScreen(
                 title = { Text(uiState.municipioName ?: municipio.nombre) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
             )
@@ -101,7 +108,7 @@ fun SnapshotMunicipioScreen(
             ) {
                 Icon(
                     Icons.Default.AddCircle,
-                    contentDescription = "Generate Snapshot",
+                    contentDescription = stringResource(R.string.generar_snap),
                     modifier = Modifier.size(26.dp)
                 )
             }
@@ -130,14 +137,14 @@ fun SnapshotMunicipioScreen(
                                 viewModel.deleteSnapshotsInBatch(toDelete)
                                 selectedIndexes.clear()
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("${toDelete.size} snapshots deleted")
+                                    snackbarHostState.showSnackbar("${toDelete.size} ${xErasedSnapshots}")
                                 }
                             },
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
-                                contentDescription = "Delete selected",
+                                contentDescription = stringResource(R.string.borrar_seleccion),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -151,12 +158,12 @@ fun SnapshotMunicipioScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Download,
-                                contentDescription = "Download selected"
+                                contentDescription = stringResource(R.string.descargar_seleccion)
                             )
                         }
 
                         Text(
-                            text = "${selectedReportIds.size} selected",
+                            text = "${selectedReportIds.size} ${stringResource(R.string.seleccionados)}",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )
@@ -198,7 +205,7 @@ fun SnapshotMunicipioScreen(
                                 viewModel.deleteSnapshot(snapshot)
                                 selectedIndexes.remove(index)
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Snapshot deleted")
+                                    snackbarHostState.showSnackbar(snapBorradoMessage)
                                 }
                             },
                             modifier = Modifier.weight(1f)

@@ -35,7 +35,7 @@ class ForgotPasswordViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { success = true },
-                onFailure = { error = it.localizedMessage ?: "Error desconocido" }
+                onFailure = { error = it.localizedMessage ?: "Error" }
             )
         }
     }

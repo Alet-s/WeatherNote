@@ -9,7 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 import com.alexser.weathernote.presentation.components.BigWeatherCard
 import com.alexser.weathernote.presentation.components.HourlyForecastCard
 import kotlinx.coroutines.flow.collectLatest
@@ -44,12 +46,12 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("WeatherNote Home", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.p_principal), style = MaterialTheme.typography.titleLarge)
             TextButton(onClick = {
                 viewModel.logout()
                 onLogout()
             }) {
-                Text("Logout")
+                Text(stringResource(R.string.cerrar_sesion))
             }
         }
 
@@ -63,7 +65,7 @@ fun HomeScreen(
                 val hourly = (uiState as SnapshotUiState.Success).hourly
 
                 Text(
-                    "Today's Weather",
+                    stringResource(R.string.tiempo_hoy),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -76,7 +78,7 @@ fun HomeScreen(
 
                 if (hourly.isNotEmpty()) {
                     Text(
-                        text = "Next hours",
+                        text = stringResource(R.string.prox_horas),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                     )
@@ -97,15 +99,15 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(top = 24.dp)
                 ) {
-                    Text("Generate Snapshot Now")
+                    Text(stringResource(R.string.generar_snap))
                 }
 
                 // Floating Action Button replacement
                 if (uiState is SnapshotUiState.Idle) {
                     Spacer(modifier = Modifier.height(16.dp))
                     ExtendedFloatingActionButton(
-                        text = { Text("Add") },
-                        icon = { Icon(Icons.Default.Add, contentDescription = "Add Favorite") },
+                        text = { Text(stringResource(R.string.anyadir)) },
+                        icon = { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.anyadir_fav)) },
                         onClick = onRequestAddFavorite,
                         modifier = Modifier.align(Alignment.End)
                     )
@@ -128,7 +130,7 @@ fun HomeScreen(
 
             is SnapshotUiState.Idle -> {
                 Text(
-                    text = "Search for a municipio to see its weather.",
+                    text = stringResource(R.string.busca_ver_tiempo),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(top = 32.dp)
                 )

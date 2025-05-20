@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SnapshotRetentionOption
 import kotlinx.coroutines.launch
 
@@ -28,13 +30,16 @@ fun SnapshotConfigScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val messageSaved = stringResource(R.string.retencion_guardada)
+    val messageCleanup = stringResource(R.string.limpieza_marcha)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Snapshot Settings") },
+                title = { Text(stringResource(R.string.opciones_snapshots)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
             )
@@ -48,7 +53,7 @@ fun SnapshotConfigScreen(
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text("How many snapshots should be kept?")
+            Text(stringResource(R.string.cuantos_snaps))
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -65,20 +70,20 @@ fun SnapshotConfigScreen(
                         )
                         Text(
                             text = when (option) {
-                                SnapshotRetentionOption.KEEP_15 -> "Keep last 15"
-                                SnapshotRetentionOption.KEEP_31 -> "Keep 1 month (31)"
-                                SnapshotRetentionOption.KEEP_62 -> "Keep 2 months (62)"
-                                SnapshotRetentionOption.KEEP_93 -> "Keep 3 months (93)"
-                                SnapshotRetentionOption.KEEP_186 -> "Keep 6 months (186)"
-                                SnapshotRetentionOption.KEEP_365 -> "Keep 1 year (365)"
-                                SnapshotRetentionOption.KEEP_ALL -> "Keep everything"
+                                SnapshotRetentionOption.KEEP_15 -> stringResource(R.string.mantener_15)
+                                SnapshotRetentionOption.KEEP_31 -> stringResource(R.string.mantener_mes)
+                                SnapshotRetentionOption.KEEP_62 -> stringResource(R.string.mantener_2_meses)
+                                SnapshotRetentionOption.KEEP_93 -> stringResource(R.string.mantener_3_meses)
+                                SnapshotRetentionOption.KEEP_186 -> stringResource(R.string.mantener_6_meses)
+                                SnapshotRetentionOption.KEEP_365 -> stringResource(R.string.mantener_1_anyo)
+                                SnapshotRetentionOption.KEEP_ALL -> stringResource(R.string.mantener_todo)
                             }
                         )
                     }
                 }
             }
 
-            Text("Apply this setting to:")
+            Text(stringResource(R.string.aplicar_opciones_a))
 
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -103,7 +108,7 @@ fun SnapshotConfigScreen(
                     onClick = {
                         viewModel.saveOptionToSelectedMunicipios()
                         scope.launch {
-                            snackbarHostState.showSnackbar("Retention saved for selected municipios.")
+                            snackbarHostState.showSnackbar(messageSaved)
                         }
                     },
                     modifier = Modifier.weight(1f)
@@ -115,12 +120,12 @@ fun SnapshotConfigScreen(
                     onClick = {
                         viewModel.enforceCleanup()
                         scope.launch {
-                            snackbarHostState.showSnackbar("Cleanup triggered.")
+                            snackbarHostState.showSnackbar(messageCleanup)
                         }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Enforce now")
+                    Text(stringResource(R.string.limpiar_snaps_pasados))
                 }
             }
         }

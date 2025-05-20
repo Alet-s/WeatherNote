@@ -5,15 +5,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.rounded.Thermostat
 import androidx.compose.material3.*
-import androidx.compose.material3.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.domain.model.CondicionMeteorologica
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
@@ -37,17 +37,16 @@ fun BigWeatherCard(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
 
-            // Action buttons (edit & delete) top right
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             ) {
                 IconButton(onClick = onEditClick) {
-                    Icon(Icons.Outlined.Edit, contentDescription = "Edit Home Municipio")
+                    Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.editar_municipio_principal))
                 }
                 IconButton(onClick = onRemoveClick) {
-                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Remove Home Municipio")
+                    Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.quitar_municipio_principal))
                 }
             }
 

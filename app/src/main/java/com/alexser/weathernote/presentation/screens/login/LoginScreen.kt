@@ -22,8 +22,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.alexser.weathernote.R
 
 
 @Composable
@@ -33,7 +35,6 @@ fun LoginScreen(
     onNavigateToSignup: () -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
-    // ✅ Reset UI state when the screen is shown
     LaunchedEffect(Unit) {
         viewModel.resetState()
     }
@@ -47,7 +48,7 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Iniciar Sesión",
+            text = stringResource(R.string.iniciar_sesion),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 24.dp)
         )
@@ -55,7 +56,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = uiState.email,
             onValueChange = viewModel::onEmailChange,
-            label = { Text("Correo electrónico") },
+            label = { Text(stringResource(R.string.correo_electronico)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -64,7 +65,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = uiState.password,
             onValueChange = viewModel::onPasswordChange,
-            label = { Text("Contraseña") },
+            label = { Text(stringResource(R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -72,7 +73,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "No account? Register here",
+            text = stringResource(R.string.no_cuenta_registrate),
             color = MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
@@ -82,7 +83,7 @@ fun LoginScreen(
         )
 
         Text(
-            text = "¿Olvidaste tu contraseña?",
+            text = stringResource(R.string.olvidaste_pass),
             color = MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
@@ -96,7 +97,7 @@ fun LoginScreen(
             enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Iniciar sesión")
+            Text(stringResource(R.string.iniciar_sesion))
         }
 
         if (uiState.error != null) {

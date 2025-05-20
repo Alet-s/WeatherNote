@@ -11,7 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 
 @Composable
 fun VerifyEmailScreen(
@@ -24,12 +26,12 @@ fun VerifyEmailScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("A verification email has been sent to your inbox.")
+        Text(stringResource(R.string.email_mandado))
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Please verify your email and click continue.")
+        Text(stringResource(R.string.verifique_continuar))
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onContinue) {
-            Text("Continue")
+            Text(stringResource(R.string.continuar))
         }
     }
 }

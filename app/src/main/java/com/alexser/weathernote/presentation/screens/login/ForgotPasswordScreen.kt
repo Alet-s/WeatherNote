@@ -17,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.alexser.weathernote.R
 
 @Composable
 fun ForgotPasswordScreen(
@@ -36,13 +38,13 @@ fun ForgotPasswordScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Recuperar contraseña", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.recuperar_pass), style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = viewModel::onEmailChange,
-            label = { Text("Correo electrónico") },
+            label = { Text(stringResource(R.string.correo_electronico)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -53,13 +55,13 @@ fun ForgotPasswordScreen(
             enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Enviar correo de recuperación")
+            Text(stringResource(R.string.recuperar_correo))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Volver al inicio de sesión",
+            text = stringResource(R.string.vovler_ini_sesion),
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable { onBackToLogin() }
         )
@@ -74,7 +76,7 @@ fun ForgotPasswordScreen(
 
         if (success) {
             Text(
-                text = "Correo enviado. Revisa tu bandeja de entrada.",
+                text = stringResource(R.string.correo_envi_revisa),
                 color = Color.Green,
                 modifier = Modifier.padding(top = 16.dp)
             )

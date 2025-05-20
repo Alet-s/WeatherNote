@@ -1,6 +1,6 @@
 package com.alexser.weathernote.domain.model
 
-
+//TODO: BORRAR
 enum class SnapshotFrequency {
     MANUAL,
     HOURLY,

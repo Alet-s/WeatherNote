@@ -31,7 +31,6 @@ fun MetricsCheckboxes(selected: MutableMap<String, Boolean>) {
                     }
                 }
 
-                // If only 1 item in this row, add a spacer to fill second column space
                 if (rowItems.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
