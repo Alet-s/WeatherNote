@@ -1,5 +1,6 @@
 package com.alexser.weathernote.data.remote
 
+import DiaDto
 import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.utils.Constants.AEMET_API_KEY
 import com.alexser.weathernote.data.remote.mapper.toBasicWeatherForecast
@@ -21,5 +22,12 @@ class AemetService @Inject constructor(
         val meta = aemetApi.getHourlyForecastMetadata(municipioId, AEMET_API_KEY)
         return rawApi.getHourlyForecast(meta.datos)
     }
+
+    suspend fun getDailyForecast(municipioId: String): List<DiaDto> {
+        val meta = aemetApi.getForecastMetadata(municipioId, AEMET_API_KEY)
+        val forecastDto = rawApi.getDailyForecast(meta.datos)
+        return forecastDto.first().prediccion.dia
+    }
+
 
 }

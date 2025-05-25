@@ -7,6 +7,7 @@ import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.data.local.SnapshotPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
+import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,8 +26,9 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val homeMunicipioPreferences: HomeMunicipioPreferences,
     private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase,
-    private val snapshotPreferences: SnapshotPreferences
-) : ViewModel() {
+    private val snapshotPreferences: SnapshotPreferences,
+    private val getDailyForecastUseCase: GetDailyForecastUseCase,
+    ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
     val municipios: StateFlow<List<SavedMunicipio>> = _municipios
@@ -188,9 +190,18 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
     }
 
-    fun resetSyncStatus() {
-        _syncSuccess.value = null
+    private val _dailyForecasts = MutableStateFlow<Map<String, List<DailyForecast>>>(emptyMap())
+    val dailyForecasts: StateFlow<Map<String, List<DailyForecast>>> = _dailyForecasts
+
+    fun fetchDailyForecast(municipioId: String) {
+        viewModelScope.launch {
+            try {
+                val result = getDailyForecastUseCase(municipioId)
+                _dailyForecasts.update { it + (municipioId to result) }
+            } catch (_: Exception) {}
+        }
     }
+
 
     private suspend fun <T> retryIO(
         times: Int = 3,

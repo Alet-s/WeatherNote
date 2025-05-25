@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.alexser.weathernote.presentation.screens.municipios
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -18,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.presentation.components.DailyForecastCard
 import com.alexser.weathernote.presentation.components.HourlyForecastDialog
 import com.alexser.weathernote.presentation.components.WeatherCard
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MunicipiosScreen(
     viewModel: MunicipiosScreenViewModel,
@@ -31,6 +34,7 @@ fun MunicipiosScreen(
     val municipios by viewModel.municipios.collectAsState()
     val snapshotStates by viewModel.snapshotMunicipioUiStates.collectAsState()
     val fullForecasts by viewModel.hourlyFullForecasts.collectAsState()
+    val dailyForecasts by viewModel.dailyForecasts.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
     val homeMunicipioId by viewModel.homeMunicipioId.collectAsState(initial = null)
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
@@ -44,6 +48,7 @@ fun MunicipiosScreen(
     var showSearch by remember { mutableStateOf(false) }
     val promptTextAddMuni = stringResource(R.string.usa_barra_anyadir_muni)
 
+    val expandedCards = remember { mutableStateMapOf<String, Boolean>() }
 
     val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
     val currentFullItem: HourlyForecastFullItem? =
@@ -146,54 +151,73 @@ fun MunicipiosScreen(
             items(municipios) { municipio ->
                 val snapshotState = snapshotStates[municipio.id]
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    when (snapshotState) {
-                        is SnapshotMunicipioUiState.Loading -> {
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                            )
-                        }
-                        is SnapshotMunicipioUiState.Success -> {
-                            WeatherCard(
-                                report = snapshotState.basicWeatherForecast,
-                                modifier = Modifier.clickable {
-                                    selectedMunicipio.value = municipio
-                                },
-                                onSetHome = if (municipio.id != homeMunicipioId) {
-                                    { viewModel.setHomeMunicipio(municipio.id) }
-                                } else null,
-                                onDelete = {
-                                    municipioToDelete.value = municipio
-                                }
-                            )
-                        }
-                        is SnapshotMunicipioUiState.Error -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "${stringResource(R.string.error_cargar_datos)} ${snapshotState.message}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        when (snapshotState) {
+                            is SnapshotMunicipioUiState.Loading -> {
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
                                 )
-                                TextButton(onClick = {
-                                    viewModel.fetchSnapshot(municipio.id)
-                                }) {
-                                    Text(stringResource(R.string.reintentar))
+                            }
+                            is SnapshotMunicipioUiState.Success -> {
+                                WeatherCard(
+                                    report = snapshotState.basicWeatherForecast,
+                                    modifier = Modifier.clickable {
+                                        val wasExpanded = expandedCards[municipio.id] ?: false
+                                        expandedCards[municipio.id] = !wasExpanded
+                                        if (!wasExpanded) viewModel.fetchDailyForecast(municipio.id)
+                                    },
+                                    onSetHome = if (municipio.id != homeMunicipioId) {
+                                        { viewModel.setHomeMunicipio(municipio.id) }
+                                    } else null,
+                                    onDelete = {
+                                        municipioToDelete.value = municipio
+                                    }
+                                )
+                            }
+                            is SnapshotMunicipioUiState.Error -> {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "${stringResource(R.string.error_cargar_datos)} ${snapshotState.message}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                    TextButton(onClick = {
+                                        viewModel.fetchSnapshot(municipio.id)
+                                    }) {
+                                        Text(stringResource(R.string.reintentar))
+                                    }
                                 }
                             }
+                            null -> {
+                                Text(stringResource(R.string.sin_estado))
+                            }
                         }
-                        null -> {
-                            Text(stringResource(R.string.sin_estado))
+                    }
+
+                    if (expandedCards[municipio.id] == true) {
+                        val forecast = dailyForecasts[municipio.id]
+                        forecast?.let {
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                items(it) { daily ->
+                                    DailyForecastCard(forecast = daily)
+                                }
+                            }
                         }
                     }
                 }
