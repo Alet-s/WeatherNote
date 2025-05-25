@@ -32,8 +32,8 @@ class HomeScreenViewModel @Inject constructor(
     private val homePrefs: HomeMunicipioPreferences
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<SnapshotUiState>(SnapshotUiState.Idle)
-    val uiState: StateFlow<SnapshotUiState> = _uiState
+    private val _uiState = MutableStateFlow<SnapshotHomeUiState>(SnapshotHomeUiState.Idle)
+    val uiState: StateFlow<SnapshotHomeUiState> = _uiState
 
     private val _searchInput = MutableStateFlow("")
     val searchInput: StateFlow<String> = _searchInput
@@ -48,7 +48,7 @@ class HomeScreenViewModel @Inject constructor(
                 if (!id.isNullOrBlank()) {
                     fetchSnapshot(id)
                 } else {
-                    _uiState.value = SnapshotUiState.Idle
+                    _uiState.value = SnapshotHomeUiState.Idle
                 }
             }
         }
@@ -60,19 +60,19 @@ class HomeScreenViewModel @Inject constructor(
 
     fun searchAndFetchSnapshot() {
         viewModelScope.launch {
-            _uiState.value = SnapshotUiState.Loading
+            _uiState.value = SnapshotHomeUiState.Loading
             val id = findMunicipioByNameUseCase(_searchInput.value)
             if (id != null) {
                 fetchSnapshot(id)
             } else {
-                _uiState.value = SnapshotUiState.Error("Municipio not found")
+                _uiState.value = SnapshotHomeUiState.Error("Municipio not found")
             }
         }
     }
 
     fun fetchSnapshot(municipioId: String) {
         viewModelScope.launch {
-            _uiState.value = SnapshotUiState.Loading
+            _uiState.value = SnapshotHomeUiState.Loading
             val snapshotResult = getBasicWeatherForecastUseCase(municipioId)
 
             if (snapshotResult.isSuccess) {
@@ -82,13 +82,13 @@ class HomeScreenViewModel @Inject constructor(
                 val hourlyItems = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
                 val hourlyFullItems = hourlyDto.firstOrNull()?.toHourlyForecastFullItems() ?: emptyList()
 
-                _uiState.value = SnapshotUiState.Success(
+                _uiState.value = SnapshotHomeUiState.Success(
                     data = snapshot,
                     hourly = hourlyItems,
                     hourlyFull = hourlyFullItems
                 )
             } else {
-                _uiState.value = SnapshotUiState.Error(
+                _uiState.value = SnapshotHomeUiState.Error(
                     snapshotResult.exceptionOrNull()?.localizedMessage ?: "Failed to load weather data"
                 )
             }
@@ -96,7 +96,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun generateSnapshotManually() {
-        val state = _uiState.value as? SnapshotUiState.Success ?: return
+        val state = _uiState.value as? SnapshotHomeUiState.Success ?: return
         val municipioId = state.data.cityId
         val municipioName = state.data.city
         val date = state.data.date
@@ -123,7 +123,7 @@ class HomeScreenViewModel @Inject constructor(
 
 
     fun addToFavorites() {
-        val snapshot = (_uiState.value as? SnapshotUiState.Success)?.data ?: return
+        val snapshot = (_uiState.value as? SnapshotHomeUiState.Success)?.data ?: return
         val municipio = SavedMunicipio(id = snapshot.cityId, nombre = snapshot.city)
         viewModelScope.launch {
             addMunicipioUseCase(municipio)
@@ -134,7 +134,7 @@ class HomeScreenViewModel @Inject constructor(
     fun clearHomeMunicipio() {
         viewModelScope.launch {
             homePrefs.clearHomeMunicipioId()
-            _uiState.value = SnapshotUiState.Idle
+            _uiState.value = SnapshotHomeUiState.Idle
         }
     }
 

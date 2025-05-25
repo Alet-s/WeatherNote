@@ -29,7 +29,7 @@ fun MunicipiosScreen(
     showPrompt: Boolean = false
 ) {
     val municipios by viewModel.municipios.collectAsState()
-    val snapshotStates by viewModel.snapshotUiStates.collectAsState()
+    val snapshotStates by viewModel.snapshotMunicipioUiStates.collectAsState()
     val fullForecasts by viewModel.hourlyFullForecasts.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
     val homeMunicipioId by viewModel.homeMunicipioId.collectAsState(initial = null)
@@ -152,14 +152,14 @@ fun MunicipiosScreen(
                         .padding(vertical = 4.dp)
                 ) {
                     when (snapshotState) {
-                        is SnapshotUiState.Loading -> {
+                        is SnapshotMunicipioUiState.Loading -> {
                             LinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp)
                             )
                         }
-                        is SnapshotUiState.Success -> {
+                        is SnapshotMunicipioUiState.Success -> {
                             WeatherCard(
                                 report = snapshotState.basicWeatherForecast,
                                 modifier = Modifier.clickable {
@@ -173,7 +173,7 @@ fun MunicipiosScreen(
                                 }
                             )
                         }
-                        is SnapshotUiState.Error -> {
+                        is SnapshotMunicipioUiState.Error -> {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()

@@ -173,7 +173,7 @@ fun SnapshotMunicipioScreen(
                 }
             }
 
-            Text("Past Snapshots", style = MaterialTheme.typography.titleMedium, fontSize = 18.sp)
+            Text(stringResource(R.string.snapshots), style = MaterialTheme.typography.titleMedium, fontSize = 18.sp)
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),

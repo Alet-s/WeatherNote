@@ -1,5 +1,6 @@
 package com.alexser.weathernote.presentation.screens.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,10 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 import com.alexser.weathernote.presentation.components.BigWeatherCard
 import com.alexser.weathernote.presentation.components.HourlyForecastCard
+import com.alexser.weathernote.presentation.components.HourlyForecastDialog
+import com.alexser.weathernote.presentation.screens.home.SnapshotHomeUiState
+import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
+import java.time.LocalTime
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +30,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val selectedHourForecast = remember { mutableStateOf<HourlyForecastFullItem?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collectLatest { message ->
@@ -38,7 +44,6 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        // TopAppBar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,13 +61,17 @@ fun HomeScreen(
         }
 
         when (uiState) {
-            is SnapshotUiState.Loading -> {
+            is SnapshotHomeUiState.Loading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
 
-            is SnapshotUiState.Success -> {
-                val report = (uiState as SnapshotUiState.Success).data
-                val hourly = (uiState as SnapshotUiState.Success).hourly
+            is SnapshotHomeUiState.Success -> {
+                val report = (uiState as SnapshotHomeUiState.Success).data
+                val hourly = (uiState as SnapshotHomeUiState.Success).hourly
+                val hourlyFull = (uiState as SnapshotHomeUiState.Success).hourlyFull
+
+                val currentHour = LocalTime.now().hour.toString().padStart(2, '0')
+                val currentItem = hourlyFull?.firstOrNull { it.hour == currentHour }
 
                 Text(
                     stringResource(R.string.tiempo_hoy),
@@ -70,11 +79,17 @@ fun HomeScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                BigWeatherCard(
-                    report = report,
-                    onEditClick = onRequestAddFavorite,
-                    onRemoveClick = viewModel::clearHomeMunicipio
-                )
+                Box(modifier = Modifier.clickable {
+                    if (currentItem != null) {
+                        selectedHourForecast.value = currentItem
+                    }
+                }) {
+                    BigWeatherCard(
+                        report = report,
+                        onEditClick = onRequestAddFavorite,
+                        onRemoveClick = viewModel::clearHomeMunicipio
+                    )
+                }
 
                 if (hourly.isNotEmpty()) {
                     Text(
@@ -101,21 +116,10 @@ fun HomeScreen(
                 ) {
                     Text(stringResource(R.string.generar_snap))
                 }
-
-                // Floating Action Button replacement
-                if (uiState is SnapshotUiState.Idle) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ExtendedFloatingActionButton(
-                        text = { Text(stringResource(R.string.anyadir)) },
-                        icon = { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.anyadir_fav)) },
-                        onClick = onRequestAddFavorite,
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                }
             }
 
-            is SnapshotUiState.Error -> {
-                val message = (uiState as SnapshotUiState.Error).message
+            is SnapshotHomeUiState.Error -> {
+                val message = (uiState as SnapshotHomeUiState.Error).message
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -128,7 +132,7 @@ fun HomeScreen(
                 }
             }
 
-            is SnapshotUiState.Idle -> {
+            is SnapshotHomeUiState.Idle -> {
                 Text(
                     text = stringResource(R.string.busca_ver_tiempo),
                     style = MaterialTheme.typography.bodyLarge,
@@ -137,7 +141,13 @@ fun HomeScreen(
             }
         }
 
-        // Snackbar host
+        selectedHourForecast.value?.let { item ->
+            HourlyForecastDialog(
+                data = item,
+                onDismiss = { selectedHourForecast.value = null }
+            )
+        }
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.CenterHorizontally)

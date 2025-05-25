@@ -31,8 +31,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
     val municipios: StateFlow<List<SavedMunicipio>> = _municipios
 
-    private val _snapshotUiStates = MutableStateFlow<Map<String, SnapshotUiState>>(emptyMap())
-    val snapshotUiStates: StateFlow<Map<String, SnapshotUiState>> = _snapshotUiStates
+    private val _snapshotMunicipioUiStates = MutableStateFlow<Map<String, SnapshotMunicipioUiState>>(emptyMap())
+    val snapshotMunicipioUiStates: StateFlow<Map<String, SnapshotMunicipioUiState>> = _snapshotMunicipioUiStates
 
     private val _syncSuccess = MutableStateFlow<Boolean?>(null)
     val syncSuccess: StateFlow<Boolean?> = _syncSuccess
@@ -75,7 +75,7 @@ class MunicipiosScreenViewModel @Inject constructor(
             getSavedMunicipiosUseCase().collect { savedList ->
                 _municipios.value = savedList
                 savedList.forEach { municipio ->
-                    if (!_snapshotUiStates.value.containsKey(municipio.id)) {
+                    if (!_snapshotMunicipioUiStates.value.containsKey(municipio.id)) {
                         fetchSnapshot(municipio.id)
                     }
                 }
@@ -85,13 +85,13 @@ class MunicipiosScreenViewModel @Inject constructor(
 
     fun fetchSnapshot(municipioId: String) {
         viewModelScope.launch {
-            _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Loading) }
+            _snapshotMunicipioUiStates.update { it + (municipioId to SnapshotMunicipioUiState.Loading) }
 
             try {
                 val snapshot = retryIO { getBasicWeatherForecastUseCase(municipioId).getOrThrow() }
-                _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Success(snapshot)) }
+                _snapshotMunicipioUiStates.update { it + (municipioId to SnapshotMunicipioUiState.Success(snapshot)) }
             } catch (e: Exception) {
-                _snapshotUiStates.update { it + (municipioId to SnapshotUiState.Error(e.message ?: "Error al cargar datos")) }
+                _snapshotMunicipioUiStates.update { it + (municipioId to SnapshotMunicipioUiState.Error(e.message ?: "Error al cargar datos")) }
             }
         }
     }
@@ -119,7 +119,7 @@ class MunicipiosScreenViewModel @Inject constructor(
             }
 
             _municipios.update { it.filterNot { it.id == id } }
-            _snapshotUiStates.update { it - id }
+            _snapshotMunicipioUiStates.update { it - id }
 
             val msg = if (deleteSnapshots) {
                 "Municipio and snapshots deleted"
