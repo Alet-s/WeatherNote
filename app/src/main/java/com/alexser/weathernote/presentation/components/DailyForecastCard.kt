@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.DailyForecast
-import com.alexser.weathernote.utils.toFormattedForecastLabel
+import com.alexser.weathernote.utils.formatDateAsDayAndMonth
 
 @Composable
 fun DailyForecastCard(
@@ -30,7 +30,7 @@ fun DailyForecastCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = forecast.date,
+                text = formatDateAsDayAndMonth(forecast.date),
                 style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center
             )

@@ -1,6 +1,8 @@
 package com.alexser.weathernote.utils
 
-import java.text.Normalizer
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 fun formatMunicipioName(rawName: String): String {
     val mainPart = rawName.split("/").first().trim()
@@ -19,3 +21,15 @@ fun formatMunicipioName(rawName: String): String {
             if (word.isNotEmpty()) word.replaceFirstChar { it.titlecase() } else word
         }
 }
+
+fun formatDateAsDayAndMonth(dateStr: String): String {
+    return try {
+        val cleaned = dateStr.take(10) // extrae "YYYY-MM-DD"
+        val date = LocalDate.parse(cleaned)
+        val formatter = DateTimeFormatter.ofPattern("d MMMM", Locale("es", "ES"))
+        date.format(formatter)
+    } catch (e: Exception) {
+        dateStr
+    }
+}
+
