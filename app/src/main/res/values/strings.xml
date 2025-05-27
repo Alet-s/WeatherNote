@@ -87,4 +87,5 @@
     <string name="configuracion">Configuración</string>
     <string name="visualizacion_datos">Visualización de datos</string>
     <string name="mostrar_valores_reales">Mostrar valores reales</string>
+    <string name="prox_dias">Próximos Días</string>
 </resources>

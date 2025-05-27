@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.AuthDataSource
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
-import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
@@ -16,7 +15,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.alexser.weathernote.data.remote.mapper.toHourlyForecastItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
+import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.domain.usecase.GenerateSnapshotReport
+import com.alexser.weathernote.domain.usecase.GetDailyForecastUseCase
 import java.time.LocalTime
 import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
 
@@ -29,24 +30,26 @@ class HomeScreenViewModel @Inject constructor(
     private val getHourlyForecastUseCase: GetHourlyForecastUseCase,
     private val generateSnapshotUseCase: GenerateSnapshotReport,
     private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
-    private val homePrefs: HomeMunicipioPreferences
-) : ViewModel() {
+    private val homePrefs: HomeMunicipioPreferences,
+    private val getDailyForecastUseCase: GetDailyForecastUseCase,
+    ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SnapshotHomeUiState>(SnapshotHomeUiState.Idle)
     val uiState: StateFlow<SnapshotHomeUiState> = _uiState
 
-    private val _searchInput = MutableStateFlow("")
-    val searchInput: StateFlow<String> = _searchInput
-
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage.asSharedFlow()
+
+    private val _dailyForecasts = MutableStateFlow<List<DailyForecast>>(emptyList())
+    val dailyForecasts: StateFlow<List<DailyForecast>> = _dailyForecasts
+
 
     init {
         // Observe changes in home municipio preference
         viewModelScope.launch {
             homePrefs.homeMunicipioId.collect { id ->
                 if (!id.isNullOrBlank()) {
-                    fetchSnapshot(id)
+                    fetchBWeatherForecast(id)
                 } else {
                     _uiState.value = SnapshotHomeUiState.Idle
                 }
@@ -54,33 +57,20 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    fun onSearchInputChanged(newInput: String) {
-        _searchInput.value = newInput
-    }
-
-    fun searchAndFetchSnapshot() {
+    fun fetchBWeatherForecast(municipioId: String) {
         viewModelScope.launch {
             _uiState.value = SnapshotHomeUiState.Loading
-            val id = findMunicipioByNameUseCase(_searchInput.value)
-            if (id != null) {
-                fetchSnapshot(id)
-            } else {
-                _uiState.value = SnapshotHomeUiState.Error("Municipio not found")
-            }
-        }
-    }
+            val bWeatherForecastResult = getBasicWeatherForecastUseCase(municipioId)
 
-    fun fetchSnapshot(municipioId: String) {
-        viewModelScope.launch {
-            _uiState.value = SnapshotHomeUiState.Loading
-            val snapshotResult = getBasicWeatherForecastUseCase(municipioId)
-
-            if (snapshotResult.isSuccess) {
-                val snapshot = snapshotResult.getOrThrow()
+            if (bWeatherForecastResult.isSuccess) {
+                val snapshot = bWeatherForecastResult.getOrThrow()
                 val hourlyDto = getHourlyForecastUseCase(municipioId)
 
                 val hourlyItems = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
                 val hourlyFullItems = hourlyDto.firstOrNull()?.toHourlyForecastFullItems() ?: emptyList()
+
+                val daily = getDailyForecastUseCase(municipioId)
+                _dailyForecasts.value = daily
 
                 _uiState.value = SnapshotHomeUiState.Success(
                     data = snapshot,
@@ -89,7 +79,7 @@ class HomeScreenViewModel @Inject constructor(
                 )
             } else {
                 _uiState.value = SnapshotHomeUiState.Error(
-                    snapshotResult.exceptionOrNull()?.localizedMessage ?: "Failed to load weather data"
+                    bWeatherForecastResult.exceptionOrNull()?.localizedMessage ?: "Failed to load weather data"
                 )
             }
         }
@@ -122,15 +112,6 @@ class HomeScreenViewModel @Inject constructor(
     }
 
 
-    fun addToFavorites() {
-        val snapshot = (_uiState.value as? SnapshotHomeUiState.Success)?.data ?: return
-        val municipio = SavedMunicipio(id = snapshot.cityId, nombre = snapshot.city)
-        viewModelScope.launch {
-            addMunicipioUseCase(municipio)
-            homePrefs.setHomeMunicipioId(municipio.id)
-        }
-    }
-
     fun clearHomeMunicipio() {
         viewModelScope.launch {
             homePrefs.clearHomeMunicipioId()
@@ -142,4 +123,12 @@ class HomeScreenViewModel @Inject constructor(
     fun logout() {
         authDataSource.signOut()
     }
+
+    fun showSnackbar(message: String) {
+        viewModelScope.launch {
+            _snackbarMessage.emit(message)
+        }
+    }
+
+
 }

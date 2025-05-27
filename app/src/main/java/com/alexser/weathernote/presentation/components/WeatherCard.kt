@@ -79,7 +79,7 @@ fun WeatherCard(
                     contentDescription = condition.descripcion,
                     tint = Color.Unspecified,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(80.dp)
                         .align(Alignment.CenterHorizontally)
                 )
 
