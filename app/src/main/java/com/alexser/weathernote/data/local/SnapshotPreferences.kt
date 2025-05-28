@@ -17,10 +17,6 @@ class SnapshotPreferences(context: Context) {
         return name?.let { SnapshotRetentionOption.valueOf(it) }
     }
 
-    fun setSnapshotRetention(option: SnapshotRetentionOption) {
-        prefs.edit().putString(GLOBAL_KEY, option.name).apply()
-    }
-
     // 🔹 Per-municipio getter/setter
     fun getRetentionForMunicipio(municipioId: String): SnapshotRetentionOption? {
         val name = prefs.getString("$MUNICIPIO_PREFIX$municipioId", null)
@@ -35,14 +31,4 @@ class SnapshotPreferences(context: Context) {
         prefs.edit().remove("$MUNICIPIO_PREFIX$municipioId").apply()
     }
 
-    fun getAllMunicipioRetentionConfigs(): Map<String, SnapshotRetentionOption> {
-        return prefs.all
-            .filterKeys { it.startsWith(MUNICIPIO_PREFIX) }
-            .mapNotNull { (key, value) ->
-                val id = key.removePrefix(MUNICIPIO_PREFIX)
-                val opt = (value as? String)?.let { SnapshotRetentionOption.valueOf(it) }
-                if (opt != null) id to opt else null
-            }
-            .toMap()
-    }
 }

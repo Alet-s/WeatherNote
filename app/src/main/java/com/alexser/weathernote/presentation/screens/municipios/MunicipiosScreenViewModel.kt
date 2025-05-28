@@ -1,5 +1,7 @@
 package com.alexser.weathernote.presentation.screens.municipios
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.MunicipioSyncService
@@ -9,10 +11,13 @@ import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.domain.usecase.*
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import java.io.InputStreamReader
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,6 +33,8 @@ class MunicipiosScreenViewModel @Inject constructor(
     private val deleteSnapshotsByMunicipioUseCase: DeleteSnapshotsByMunicipioUseCase,
     private val snapshotPreferences: SnapshotPreferences,
     private val getDailyForecastUseCase: GetDailyForecastUseCase,
+    private val getSnapshotByReportIdUseCase: GetSnapshotByReportIdUseCase,
+    private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase
     ) : ViewModel() {
 
     private val _municipios = MutableStateFlow<List<SavedMunicipio>>(emptyList())
@@ -217,4 +224,41 @@ class MunicipiosScreenViewModel @Inject constructor(
         }
         return block()
     }
+
+    fun importSnapshotFromUri(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val reader = InputStreamReader(inputStream)
+                val gson = Gson()
+                // Parse as array
+                val snapshots: List<SnapshotReport> = gson.fromJson(
+                    reader,
+                    Array<SnapshotReport>::class.java
+                )?.toList() ?: emptyList()
+                inputStream?.close()
+
+                var imported = 0
+                var skipped = 0
+
+                for (snapshot in snapshots) {
+                    // Deduplication: by reportId (already in Firestore/local)
+                    val exists = getSnapshotByReportIdUseCase(snapshot.reportId) != null
+                    if (!exists) {
+                        saveSnapshotReportUseCase(snapshot)
+                        imported++
+                    } else {
+                        skipped++
+                    }
+                }
+                // Optionally refresh UI state, depending on your flow
+                loadMunicipiosAndSnapshots()
+
+                _snackbarMessage.value = "Importados: $imported, Omitidos: $skipped"
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Error al importar: ${e.message}"
+            }
+        }
+    }
+
 }
