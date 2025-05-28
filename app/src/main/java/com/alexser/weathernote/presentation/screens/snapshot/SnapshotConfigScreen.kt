@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,101 +34,89 @@ fun SnapshotConfigScreen(
     val messageSaved = stringResource(R.string.retencion_guardada)
     val messageCleanup = stringResource(R.string.limpieza_marcha)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.opciones_snapshots)) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Spacer(modifier = Modifier.padding(4.dp))
+        Text(stringResource(R.string.cuantos_snaps))
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(stringResource(R.string.cuantos_snaps))
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(SnapshotRetentionOption.values()) { option ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        RadioButton(
-                            selected = selectedOption == option,
-                            onClick = { viewModel.onOptionSelected(option) }
-                        )
-                        Text(
-                            text = when (option) {
-                                SnapshotRetentionOption.KEEP_15 -> stringResource(R.string.mantener_15)
-                                SnapshotRetentionOption.KEEP_31 -> stringResource(R.string.mantener_mes)
-                                SnapshotRetentionOption.KEEP_62 -> stringResource(R.string.mantener_2_meses)
-                                SnapshotRetentionOption.KEEP_93 -> stringResource(R.string.mantener_3_meses)
-                                SnapshotRetentionOption.KEEP_186 -> stringResource(R.string.mantener_6_meses)
-                                SnapshotRetentionOption.KEEP_365 -> stringResource(R.string.mantener_1_anyo)
-                                SnapshotRetentionOption.KEEP_ALL -> stringResource(R.string.mantener_todo)
-                            }
-                        )
-                    }
-                }
-            }
-
-            Text(stringResource(R.string.aplicar_opciones_a))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                municipios.forEach { municipio ->
-                    val selected = selectedMunicipioIds.contains(municipio.id)
-                    FilterChip(
-                        selected = selected,
-                        onClick = { viewModel.toggleMunicipio(municipio.id) },
-                        label = { Text(municipio.nombre) }
+            items(SnapshotRetentionOption.values()) { option ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    RadioButton(
+                        selected = selectedOption == option,
+                        onClick = { viewModel.onOptionSelected(option) }
+                    )
+                    Text(
+                        text = when (option) {
+                            SnapshotRetentionOption.KEEP_15 -> stringResource(R.string.mantener_15)
+                            SnapshotRetentionOption.KEEP_31 -> stringResource(R.string.mantener_mes)
+                            SnapshotRetentionOption.KEEP_62 -> stringResource(R.string.mantener_2_meses)
+                            SnapshotRetentionOption.KEEP_93 -> stringResource(R.string.mantener_3_meses)
+                            SnapshotRetentionOption.KEEP_186 -> stringResource(R.string.mantener_6_meses)
+                            SnapshotRetentionOption.KEEP_365 -> stringResource(R.string.mantener_1_anyo)
+                            SnapshotRetentionOption.KEEP_ALL -> stringResource(R.string.mantener_todo)
+                        }
                     )
                 }
             }
+        }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.saveOptionToSelectedMunicipios()
-                        scope.launch {
-                            snackbarHostState.showSnackbar(messageSaved)
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Save")
-                }
+        Text(stringResource(R.string.aplicar_opciones_a))
 
-                Button(
-                    onClick = {
-                        viewModel.enforceCleanup()
-                        scope.launch {
-                            snackbarHostState.showSnackbar(messageCleanup)
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(stringResource(R.string.limpiar_snaps_pasados))
-                }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            municipios.forEach { municipio ->
+                val selected = selectedMunicipioIds.contains(municipio.id)
+                FilterChip(
+                    selected = selected,
+                    onClick = { viewModel.toggleMunicipio(municipio.id) },
+                    label = { Text(municipio.nombre) }
+                )
             }
         }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = {
+                    viewModel.saveOptionToSelectedMunicipios()
+                    scope.launch {
+                        snackbarHostState.showSnackbar(messageSaved)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.guardar))
+            }
+
+            Button(
+                onClick = {
+                    viewModel.enforceCleanup()
+                    scope.launch {
+                        snackbarHostState.showSnackbar(messageCleanup)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.limpiar_snaps_pasados))
+            }
+        }
+
+        Spacer(modifier = Modifier.padding(3.dp))
     }
 }

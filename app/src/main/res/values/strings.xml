@@ -76,7 +76,7 @@
     <string name="aplicar_opciones_a">Aplicar estas opciones a:</string>
     <string name="retencion_guardada">Retención de Snapshots guardada para los municipios selecionados</string>
     <string name="limpieza_marcha">Limpieza en marcha</string>
-    <string name="limpiar_snaps_pasados">Limpiar Snapshots ahora</string>
+    <string name="limpiar_snaps_pasados">Limpiar ahora</string>
     <string name="archivo_guardado_exito">Archivo guardado con éxito</string>
     <string name="cancelado_usuario">Cancelado por el usuario</string>
     <string name="snaps_borrados">snapshots borrados</string>
@@ -88,4 +88,6 @@
     <string name="visualizacion_datos">Visualización de datos</string>
     <string name="mostrar_valores_reales">Mostrar valores reales</string>
     <string name="prox_dias">Próximos Días</string>
+    <string name="exportar_snaps">Exportar snapshots</string>
+    <string name="guardar">Guardar</string>
 </resources>

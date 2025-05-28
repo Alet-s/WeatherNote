@@ -20,6 +20,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,13 +30,21 @@ fun SnapshotMunicipiosListScreen(
 ) {
     val municipios by viewModel.municipios.collectAsState()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
-// Define launcher for picking a JSON file
+    // Listen and show snackbar when message arrives
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSnackbarMessage()
+        }
+    }
+
     val importSnapshotLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
-            // Call your ViewModel to handle the import
             viewModel.importSnapshotFromUri(context, it)
         }
     }
@@ -48,19 +57,18 @@ fun SnapshotMunicipiosListScreen(
                     IconButton(onClick = { navController.navigate("snapshotConfig") }) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.configuracion))
                     }
-                    Button(
+                    IconButton(
                         onClick = {
                             importSnapshotLauncher.launch(arrayOf("application/json"))
                         },
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(10.dp)
                     ) {
-                        Icon(Icons.Outlined.UploadFile, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Importar Snapshots")
+                        Icon(painterResource(R.drawable.wi_cloud_up), contentDescription = stringResource(R.string.exportar_snaps))
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // <-- THIS ADDS THE SNACKBAR
     ) { paddingValues ->
         Column(
             modifier = Modifier
