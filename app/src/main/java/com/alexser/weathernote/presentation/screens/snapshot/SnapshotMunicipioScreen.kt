@@ -15,11 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.sharp.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.presentation.components.SnapshotRangeSelector
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import kotlinx.coroutines.launch
 
@@ -46,18 +43,34 @@ fun SnapshotMunicipioScreen(
     viewModel: SnapshotMunicipioViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val selectedIndexes = remember { mutableStateListOf<Int>() }
-    val selectionMode = selectedIndexes.isNotEmpty()
-
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
 
-    val selectedReportIds = uiState.snapshots
+    // Snapshots and range logic
+    val snapshotCount = uiState.snapshots.size
+    var selectedRange by remember(snapshotCount) {
+        mutableStateOf(0f..(snapshotCount - 1).coerceAtLeast(0).toFloat())
+    }
+
+    // Only show snapshots in the selected range
+    val snapshotsToShow = if (uiState.snapshots.isEmpty()) {
+        emptyList()
+    } else {
+        val start = selectedRange.start.toInt().coerceAtLeast(0)
+        val end = selectedRange.endInclusive.toInt().coerceAtMost(snapshotCount - 1)
+        uiState.snapshots.slice(start..end)
+    }
+
+    // Selection logic scoped to filtered list
+    val selectedIndexes = remember { mutableStateListOf<Int>() }
+    val selectionMode = selectedIndexes.isNotEmpty()
+    val selectedReportIds = snapshotsToShow
         .mapIndexedNotNull { index, snapshot ->
             if (selectedIndexes.contains(index)) snapshot.reportId else null
         }
-    //Strings con resources precargados
+
+    // Preloaded strings
     val succesFileSaving = stringResource(R.string.archivo_guardado_exito)
     val cancelledMessage = stringResource(R.string.cancelado_usuario)
     val xErasedSnapshots = stringResource(R.string.snaps_borrados)
@@ -89,6 +102,7 @@ fun SnapshotMunicipioScreen(
 
     LaunchedEffect(municipio.id) {
         viewModel.loadSnapshotData(municipio.id, municipio.nombre)
+        selectedIndexes.clear() // Clear selection when municipio changes
     }
 
     Scaffold(
@@ -123,6 +137,31 @@ fun SnapshotMunicipioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Snapshots title and Select All button on the same row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 0.dp), // Adjust as needed
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.snapshots),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 18.sp
+                )
+                if (snapshotsToShow.isNotEmpty()) {
+                    TextButton(
+                        onClick = {
+                            selectedIndexes.clear()
+                            selectedIndexes.addAll(snapshotsToShow.indices)
+                        }
+                    ) {
+                        Text(stringResource(R.string.seleccionar_todos))
+                    }
+                }
+            }
+
             if (selectionMode) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -134,11 +173,11 @@ fun SnapshotMunicipioScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                val toDelete = uiState.snapshots.filter { selectedReportIds.contains(it.reportId) }
+                                val toDelete = snapshotsToShow.filterIndexed { idx, snapshot -> selectedIndexes.contains(idx) }
                                 viewModel.deleteSnapshotsInBatch(toDelete)
                                 selectedIndexes.clear()
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("${toDelete.size} ${xErasedSnapshots}")
+                                    snackbarHostState.showSnackbar("${toDelete.size} $xErasedSnapshots")
                                 }
                             },
                             modifier = Modifier.size(48.dp)
@@ -169,18 +208,25 @@ fun SnapshotMunicipioScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-
-
                 }
             }
 
-            Text(stringResource(R.string.snapshots), style = MaterialTheme.typography.titleMedium, fontSize = 18.sp)
+            if (uiState.snapshots.isNotEmpty()) {
+                SnapshotRangeSelector(
+                    totalCount = snapshotCount,
+                    selectedRange = selectedRange,
+                    onRangeChange = { selectedRange = it },
+                    getDateLabel = { index ->
+                        uiState.snapshots.getOrNull(index)?.timestamp?.substringBefore("T") ?: "-"
+                    }
+                )
+            }
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 96.dp)
             ) {
-                itemsIndexed(uiState.snapshots) { index, snapshot ->
+                itemsIndexed(snapshotsToShow) { index, snapshot ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier

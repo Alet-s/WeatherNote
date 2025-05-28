@@ -90,4 +90,5 @@
     <string name="prox_dias">Próximos Días</string>
     <string name="exportar_snaps">Exportar snapshots</string>
     <string name="guardar">Guardar</string>
+    <string name="seleccionar_todos">Seleccionar todos</string>
 </resources>
