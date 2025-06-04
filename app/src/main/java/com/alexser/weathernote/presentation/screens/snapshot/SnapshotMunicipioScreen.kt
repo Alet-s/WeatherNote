@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -31,8 +32,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SavedMunicipio
+import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.presentation.components.SnapshotRangeSelector
 import com.alexser.weathernote.presentation.components.SnapshotReportItem
+import com.alexser.weathernote.presentation.components.SnapshotDetailDialog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -47,13 +50,11 @@ fun SnapshotMunicipioScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Snapshots and range logic
     val snapshotCount = uiState.snapshots.size
     var selectedRange by remember(snapshotCount) {
         mutableStateOf(0f..(snapshotCount - 1).coerceAtLeast(0).toFloat())
     }
 
-    // Only show snapshots in the selected range
     val snapshotsToShow = if (uiState.snapshots.isEmpty()) {
         emptyList()
     } else {
@@ -62,7 +63,6 @@ fun SnapshotMunicipioScreen(
         uiState.snapshots.slice(start..end)
     }
 
-    // Selection logic scoped to filtered list
     val selectedIndexes = remember { mutableStateListOf<Int>() }
     val selectionMode = selectedIndexes.isNotEmpty()
     val selectedReportIds = snapshotsToShow
@@ -74,7 +74,9 @@ fun SnapshotMunicipioScreen(
     var selectedSnapshotId by remember { mutableStateOf<String?>(null) }
     var noteText by remember { mutableStateOf("") }
 
-    // Preloaded strings
+    var showDetailDialog by remember { mutableStateOf(false) }
+    var selectedSnapshotForDetail by remember { mutableStateOf<SnapshotReport?>(null) }
+
     val succesFileSaving = stringResource(R.string.archivo_guardado_exito)
     val cancelledMessage = stringResource(R.string.cancelado_usuario)
     val xErasedSnapshots = stringResource(R.string.snaps_borrados)
@@ -106,7 +108,7 @@ fun SnapshotMunicipioScreen(
 
     LaunchedEffect(municipio.id) {
         viewModel.loadSnapshotData(municipio.id, municipio.nombre)
-        selectedIndexes.clear() // Clear selection when municipio changes
+        selectedIndexes.clear()
     }
 
     Scaffold(
@@ -141,11 +143,8 @@ fun SnapshotMunicipioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Snapshots title and Select All button on the same row
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 0.dp), // Adjust as needed
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -167,9 +166,7 @@ fun SnapshotMunicipioScreen(
             }
 
             if (selectionMode) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -238,6 +235,10 @@ fun SnapshotMunicipioScreen(
                             .combinedClickable(
                                 onClick = {
                                     if (selectionMode) toggleSelection(index)
+                                    else {
+                                        selectedSnapshotForDetail = snapshot
+                                        showDetailDialog = true
+                                    }
                                 },
                                 onLongClick = {
                                     toggleSelection(index)
@@ -255,7 +256,9 @@ fun SnapshotMunicipioScreen(
                             onDelete = {
                                 viewModel.deleteSnapshot(snapshot)
                                 selectedIndexes.remove(index)
-                                coroutineScope.launch { snackbarHostState.showSnackbar(snapBorradoMessage) }
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(snapBorradoMessage)
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             onNoteClick = {
@@ -292,6 +295,13 @@ fun SnapshotMunicipioScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        )
+    }
+
+    if (showDetailDialog && selectedSnapshotForDetail != null) {
+        SnapshotDetailDialog(
+            snapshot = selectedSnapshotForDetail!!,
+            onDismiss = { showDetailDialog = false }
         )
     }
 }

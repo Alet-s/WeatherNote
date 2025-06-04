@@ -102,7 +102,7 @@ fun SnapshotReportItem(
                     onClick = it,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp) 
+                        .padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.EditNote,
