@@ -70,6 +70,10 @@ fun SnapshotMunicipioScreen(
             if (selectedIndexes.contains(index)) snapshot.reportId else null
         }
 
+    var showNoteDialog by remember { mutableStateOf(false) }
+    var selectedSnapshotId by remember { mutableStateOf<String?>(null) }
+    var noteText by remember { mutableStateOf("") }
+
     // Preloaded strings
     val succesFileSaving = stringResource(R.string.archivo_guardado_exito)
     val cancelledMessage = stringResource(R.string.cancelado_usuario)
@@ -251,15 +255,43 @@ fun SnapshotMunicipioScreen(
                             onDelete = {
                                 viewModel.deleteSnapshot(snapshot)
                                 selectedIndexes.remove(index)
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(snapBorradoMessage)
-                                }
+                                coroutineScope.launch { snackbarHostState.showSnackbar(snapBorradoMessage) }
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onNoteClick = {
+                                selectedSnapshotId = snapshot.reportId
+                                noteText = snapshot.userNote ?: ""
+                                showNoteDialog = true
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    if (showNoteDialog && selectedSnapshotId != null) {
+        AlertDialog(
+            onDismissRequest = { showNoteDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    selectedSnapshotId?.let { viewModel.updateNoteForSnapshot(it, noteText) }
+                    showNoteDialog = false
+                }) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNoteDialog = false }) { Text("Cancel") }
+            },
+            title = { Text("Add Note") },
+            text = {
+                OutlinedTextField(
+                    value = noteText,
+                    onValueChange = { noteText = it },
+                    label = { Text("Your note") },
+                    singleLine = false,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        )
     }
 }

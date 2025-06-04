@@ -2,17 +2,15 @@ package com.alexser.weathernote.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.SnapshotReport
 
@@ -23,7 +21,8 @@ fun SnapshotReportItem(
     modifier: Modifier = Modifier,
     showCheckbox: Boolean = false,
     checked: Boolean = false,
-    onCheckToggle: (() -> Unit)? = null
+    onCheckToggle: (() -> Unit)? = null,
+    onNoteClick: (() -> Unit)? = null
 ) {
     val cardColor = if (checked) {
         MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
@@ -42,6 +41,25 @@ fun SnapshotReportItem(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(12.dp)) {
+
+                // Orange dot shown visibly
+                if (!snapshot.userNote.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .offset(x = 6.dp, y = 0.dp), // Push into view beyond padding
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFFF9800) // Orange
+                        ) {
+                            Box(modifier = Modifier.size(8.dp))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -78,6 +96,22 @@ fun SnapshotReportItem(
                 }
             }
 
+            // Note icon button
+            onNoteClick?.let {
+                IconButton(
+                    onClick = it,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp) 
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.EditNote,
+                        contentDescription = "Add/Edit Note"
+                    )
+                }
+            }
+
+            // Checkbox if enabled
             if (showCheckbox && onCheckToggle != null) {
                 Checkbox(
                     checked = checked,
@@ -88,6 +122,7 @@ fun SnapshotReportItem(
                 )
             }
 
+            // Delete icon
             if (onDelete != null) {
                 IconButton(
                     onClick = onDelete,

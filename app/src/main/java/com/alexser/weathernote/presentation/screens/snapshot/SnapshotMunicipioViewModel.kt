@@ -117,4 +117,20 @@ class SnapshotMunicipioViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateNoteForSnapshot(reportId: String, newNote: String) {
+        viewModelScope.launch {
+            try {
+                val snapshot = getSnapshotByReportIdUseCase(reportId) ?: return@launch
+                val updatedSnapshot = snapshot.copy(userNote = newNote)
+                saveSnapshotReportUseCase(updatedSnapshot)
+
+                val updatedList = getSnapshotReportsByMunicipio(snapshot.municipioId)
+                _uiState.value = _uiState.value.copy(snapshots = updatedList)
+            } catch (e: Exception) {
+                Log.e("NOTE_UPDATE", "❌ Failed to update note: ${e.message}")
+            }
+        }
+    }
+
 }
