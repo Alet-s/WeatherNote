@@ -11,6 +11,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 
+/**
+ * Composable que muestra un indicador de carga centrado verticalmente con un texto descriptivo.
+ *
+ * Utiliza un [CircularProgressIndicator] acompañado de un texto que indica que los datos se están cargando.
+ * Ideal para mostrar estados de espera o carga en la interfaz.
+ */
 @Composable
 fun LoadingIndicator() {
     Column(

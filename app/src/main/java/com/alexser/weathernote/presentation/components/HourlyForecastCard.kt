@@ -13,6 +13,14 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.CondicionMeteorologica
 
+/**
+ * Composable que muestra una tarjeta compacta con la previsión meteorológica para una hora específica.
+ *
+ * La tarjeta incluye la hora, un icono representativo de la condición meteorológica,
+ * y la temperatura prevista para esa hora.
+ *
+ * @param item Objeto [HourlyForecastItem] con la información meteorológica horaria.
+ */
 @Composable
 fun HourlyForecastCard(item: HourlyForecastItem) {
     val condition = CondicionMeteorologica.fromDescripcion(item.condition)

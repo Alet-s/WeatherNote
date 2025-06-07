@@ -22,7 +22,8 @@ fun AuthNavHost(
     onAuthenticated: () -> Unit
 ) {
     val context = LocalContext.current
-    NavHost(navController = navController,
+    NavHost(
+        navController = navController,
         startDestination = "login"
     ) {
 
@@ -71,10 +72,18 @@ fun AuthNavHost(
                             if (user.isEmailVerified) {
                                 onAuthenticated() // ✅ triggers graph switch
                             } else {
-                                Toast.makeText(context, "Email not verified yet.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Email not verified yet.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
-                            Toast.makeText(context, "Could not refresh user info.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Could not refresh user info.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }

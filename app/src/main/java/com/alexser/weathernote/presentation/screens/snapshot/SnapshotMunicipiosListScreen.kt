@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.UploadFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -53,6 +52,10 @@ fun SnapshotMunicipiosListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Snapshots") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
                 actions = {
                     IconButton(onClick = { navController.navigate("snapshotConfig") }) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.configuracion))
@@ -68,7 +71,7 @@ fun SnapshotMunicipiosListScreen(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // <-- THIS ADDS THE SNACKBAR
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier

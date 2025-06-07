@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.AuthDataSource
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
-import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.domain.usecase.AddMunicipioUseCase
 import com.alexser.weathernote.domain.usecase.FindMunicipioByNameUseCase
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
@@ -13,13 +12,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.alexser.weathernote.data.remote.mapper.toHourlyForecastItems
 import com.alexser.weathernote.data.remote.mapper.toSnapshotReport
 import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.domain.usecase.GenerateSnapshotReport
 import com.alexser.weathernote.domain.usecase.GetDailyForecastUseCase
 import java.time.LocalTime
 import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
+import toHourlyForecastFullItems
+import toHourlyForecastItems
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(

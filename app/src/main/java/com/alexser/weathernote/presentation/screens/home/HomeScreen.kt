@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material3.*
@@ -21,7 +20,6 @@ import com.alexser.weathernote.presentation.components.BigWeatherCard
 import com.alexser.weathernote.presentation.components.HourlyForecastCard
 import com.alexser.weathernote.presentation.components.HourlyForecastDialog
 import com.alexser.weathernote.presentation.components.DailyForecastCard
-import com.alexser.weathernote.presentation.screens.home.SnapshotHomeUiState
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalTime

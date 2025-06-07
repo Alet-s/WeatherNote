@@ -10,6 +10,13 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 
+/**
+ * Composable que muestra la información meteorológica detallada para la hora actual.
+ * Sin implementación en versión actual.
+ *
+ * @param data Objeto [HourlyForecastFullItem] que contiene los datos meteorológicos a mostrar.
+ * @param modifier Modificador opcional para personalizar el layout del componente.
+ */
 @Composable
 fun CurrentHourWeatherCard(
     data: HourlyForecastFullItem,
@@ -35,12 +42,21 @@ fun CurrentHourWeatherCard(
             InfoRow(stringResource(R.string.precipitacion), "${data.precipitation ?: 0.0} mm")
             InfoRow(stringResource(R.string.nieve), "${data.snow ?: 0.0} mm")
             InfoRow(stringResource(R.string.humedad_relativa), "${data.humidity ?: "--"}%")
-            InfoRow(stringResource(R.string.velocidad_viento), "${data.windSpeed ?: "--"} km/h ${data.windDirection ?: ""}")
+            InfoRow(
+                stringResource(R.string.velocidad_viento),
+                "${data.windSpeed ?: "--"} km/h ${data.windDirection ?: ""}"
+            )
             InfoRow(stringResource(R.string.racha_max), "${data.maxGust ?: "--"} km/h")
         }
     }
 }
 
+/**
+ * Fila de información que muestra una etiqueta y su valor correspondiente en la misma línea.
+ *
+ * @param label Texto descriptivo del dato.
+ * @param value Valor asociado a la etiqueta.
+ */
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(

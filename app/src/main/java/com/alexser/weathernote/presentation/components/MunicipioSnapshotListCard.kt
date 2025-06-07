@@ -15,6 +15,13 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 import com.alexser.weathernote.domain.model.SavedMunicipio
 
+/**
+ * Componente que muestra una tarjeta con el nombre de un municipio guardado
+ * y un texto descriptivo.
+ *
+ * @param municipio El municipio que se va a mostrar.
+ * @param onClick Acción a ejecutar cuando se pulsa la tarjeta.
+ */
 @Composable
 fun MunicipioSnapshotListCard(
     municipio: SavedMunicipio,
@@ -28,7 +35,10 @@ fun MunicipioSnapshotListCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = municipio.nombre, style = MaterialTheme.typography.titleMedium)
-            Text(text = stringResource(R.string.toca_manejar_municipios), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = stringResource(R.string.toca_manejar_municipios),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

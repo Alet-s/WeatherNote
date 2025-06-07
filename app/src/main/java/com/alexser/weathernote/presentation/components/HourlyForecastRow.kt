@@ -12,6 +12,15 @@ import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.CondicionMeteorologica
 
+/**
+ * Composable que muestra una fila con la previsión meteorológica para una hora específica.
+ *
+ * La fila incluye la hora, la temperatura, un icono representativo de la condición meteorológica
+ * y una descripción textual de dicha condición.
+ *
+ * @param forecast Datos meteorológicos horarios, representados por un objeto [HourlyForecastItem].
+ * @param modifier Modifier opcional para personalizar el layout del componente.
+ */
 @Composable
 fun HourlyForecastRow(
     forecast: HourlyForecastItem,

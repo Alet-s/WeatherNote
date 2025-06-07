@@ -14,6 +14,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.SnapshotReport
 
+/**
+ * Componente que muestra una tarjeta con un resumen de un [SnapshotReport] meteorológico.
+ *
+ * Incluye datos básicos como fecha, temperatura, humedad, viento y estado del cielo,
+ * además de iconos para borrar, seleccionar y editar notas.
+ *
+ * @param snapshot El objeto [SnapshotReport] con los datos a mostrar.
+ * @param onDelete Callback opcional para eliminar el snapshot. Si es null, no se muestra el botón eliminar.
+ * @param modifier Modificador para personalizar el layout.
+ * @param showCheckbox Indica si se debe mostrar un checkbox para selección.
+ * @param checked Estado del checkbox, usado si [showCheckbox] es true.
+ * @param onCheckToggle Callback llamado al cambiar el estado del checkbox.
+ * @param onNoteClick Callback opcional para editar la nota del snapshot. Si es null, no se muestra el icono de nota.
+ */
 @Composable
 fun SnapshotReportItem(
     snapshot: SnapshotReport,
@@ -62,7 +76,11 @@ fun SnapshotReportItem(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(snapshot.timestamp)
                 }
@@ -70,13 +88,21 @@ fun SnapshotReportItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Thermostat, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.Thermostat,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("${snapshot.temperature ?: "-"}°C")
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Icon(Icons.Default.WaterDrop, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.WaterDrop,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("${snapshot.humidity ?: "-"}%")
                 }
@@ -84,13 +110,21 @@ fun SnapshotReportItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Air, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.Air,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("${snapshot.windSpeed ?: "-"} km/h")
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.Cloud,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(snapshot.condition ?: "-")
                 }

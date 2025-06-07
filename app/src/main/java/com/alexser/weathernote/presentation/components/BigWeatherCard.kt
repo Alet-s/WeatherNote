@@ -18,8 +18,19 @@ import com.alexser.weathernote.domain.model.BasicWeatherForecast
 import com.alexser.weathernote.domain.model.CondicionMeteorologica
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
 import com.alexser.weathernote.utils.formatMunicipioName
-import com.google.rpc.context.AttributeContext
 
+/**
+ * Composable que muestra una tarjeta grande con la predicción meteorológica básica de un municipio.
+ *
+ * Muestra el nombre del municipio, la fecha de la predicción, el icono de la condición meteorológica,
+ * las temperaturas máxima y mínima, y la descripción del estado del cielo.
+ * Además incluye botones para editar y eliminar el municipio principal.
+ *
+ * @param report Informe meteorológico básico que contiene los datos a mostrar.
+ * @param modifier Modifier opcional para personalizar el layout.
+ * @param onEditClick Lambda que se ejecuta al pulsar el botón de editar.
+ * @param onRemoveClick Lambda que se ejecuta al pulsar el botón de eliminar.
+ */
 @Composable
 fun BigWeatherCard(
     report: BasicWeatherForecast,
@@ -43,10 +54,16 @@ fun BigWeatherCard(
                     .padding(8.dp)
             ) {
                 IconButton(onClick = onEditClick) {
-                    Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.editar_municipio_principal))
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.editar_municipio_principal)
+                    )
                 }
                 IconButton(onClick = onRemoveClick) {
-                    Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.quitar_municipio_principal))
+                    Icon(
+                        Icons.Outlined.DeleteOutline,
+                        contentDescription = stringResource(R.string.quitar_municipio_principal)
+                    )
                 }
             }
 

@@ -10,6 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.domain.model.SnapshotReport
 
+/**
+ * Diálogo que muestra los detalles completos de un reporte meteorológico (SnapshotReport).
+ *
+ * Muestra información como municipio, fecha y hora, estado del tiempo, temperatura,
+ * sensación térmica, humedad, precipitación, nieve, viento, racha máxima y dirección del viento.
+ * También muestra una nota del usuario si está disponible.
+ *
+ * @param snapshot Reporte meteorológico cuyos detalles se mostrarán.
+ * @param onDismiss Lambda que se invoca para cerrar el diálogo.
+ */
 @Composable
 fun SnapshotDetailDialog(
     snapshot: SnapshotReport,

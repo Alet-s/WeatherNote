@@ -8,6 +8,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * Composable que muestra una lista de checkboxes organizados en filas de dos elementos.
+ *
+ * @param selected Un [MutableMap] que representa los ítems con sus etiquetas como clave y el estado seleccionado (true/false) como valor.
+ *                 Al cambiar el estado de un checkbox, se actualiza el valor correspondiente en este mapa.
+ *
+ * El componente organiza los ítems en filas, con hasta dos checkboxes por fila,
+ * mostrando la etiqueta junto al checkbox correspondiente.
+ */
 @Composable
 fun MetricsCheckboxes(selected: MutableMap<String, Boolean>) {
     val items = selected.entries.toList().chunked(2)

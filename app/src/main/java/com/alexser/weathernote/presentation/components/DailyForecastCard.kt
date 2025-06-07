@@ -13,7 +13,15 @@ import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.utils.formatDateAsDayAndMonth
 import androidx.compose.ui.res.painterResource
 
-
+/**
+ * Composable que muestra una tarjeta con la previsión meteorológica diaria.
+ *
+ * La tarjeta incluye la fecha formateada, un icono representativo de la condición meteorológica,
+ * la descripción de la condición y las temperaturas máxima y mínima previstas.
+ *
+ * @param forecast Objeto [DailyForecast] con la información meteorológica del día.
+ * @param modifier Modificador opcional para personalizar el layout del componente.
+ */
 @Composable
 fun DailyForecastCard(
     forecast: DailyForecast,

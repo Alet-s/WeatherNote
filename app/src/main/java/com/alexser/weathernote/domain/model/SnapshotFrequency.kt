@@ -1,6 +1,6 @@
 package com.alexser.weathernote.domain.model
 
-//TODO: BORRAR
+//Representa la configuración manual de snapshots original. Sin implementación actualmente
 enum class SnapshotFrequency {
     MANUAL,
     HOURLY,

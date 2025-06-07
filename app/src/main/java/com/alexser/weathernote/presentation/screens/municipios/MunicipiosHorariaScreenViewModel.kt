@@ -2,7 +2,6 @@ package com.alexser.weathernote.presentation.screens.municipios
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alexser.weathernote.data.remote.mapper.toHourlyForecastItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastItem
 import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.domain.usecase.GetHourlyForecastUseCase
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import toHourlyForecastItems
 import javax.inject.Inject
 
 @HiltViewModel

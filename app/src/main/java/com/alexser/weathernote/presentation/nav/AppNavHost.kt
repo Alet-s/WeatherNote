@@ -1,8 +1,6 @@
 package com.alexser.weathernote.presentation.nav
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,6 +19,13 @@ import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipiosL
 import com.alexser.weathernote.presentation.screens.visor.VisorScreen
 import com.alexser.weathernote.presentation.screens.visor.VisorMunicipioListScreen
 
+/**
+ * Composable que define el grafo de navegación principal de la aplicación.
+ * Es el flujo de navegación de cada usuario autenticado.
+ *
+ * @param navController Controlador de navegación que gestiona la pila de pantallas.
+ * @param onLogout Lambda que se ejecuta cuando el usuario realiza logout.
+ */
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -69,8 +74,10 @@ fun AppNavHost(
                 navArgument("municipioName") { defaultValue = "" }
             )
         ) { backStackEntry ->
-            val municipioId = backStackEntry.arguments?.getString("municipioId") ?: return@composable
-            val municipioName = backStackEntry.arguments?.getString("municipioName") ?: "Desconocido"
+            val municipioId =
+                backStackEntry.arguments?.getString("municipioId") ?: return@composable
+            val municipioName =
+                backStackEntry.arguments?.getString("municipioName") ?: "Desconocido"
 
             SnapshotMunicipioScreen(
                 municipio = SavedMunicipio(
@@ -98,8 +105,10 @@ fun AppNavHost(
                 navArgument("municipioNombre") { defaultValue = "Desconocido" }
             )
         ) { backStackEntry ->
-            val municipioId = backStackEntry.arguments?.getString("municipioId") ?: return@composable
-            val municipioNombre = backStackEntry.arguments?.getString("municipioNombre") ?: "Desconocido"
+            val municipioId =
+                backStackEntry.arguments?.getString("municipioId") ?: return@composable
+            val municipioNombre =
+                backStackEntry.arguments?.getString("municipioNombre") ?: "Desconocido"
 
             VisorScreen(
                 municipio = SavedMunicipio(id = municipioId, nombre = municipioNombre)

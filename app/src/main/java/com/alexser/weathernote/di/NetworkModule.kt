@@ -14,21 +14,40 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+/**
+ * Módulo de inyección de dependencias para la red (Network).
+ * Proporciona instancias singleton de Gson, OkHttpClient y Retrofit configurados para AEMET API.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // Gson instance
+    /**
+     * Proporciona una instancia singleton de Gson para la serialización y deserialización JSON.
+     *
+     * @return Instancia de Gson.
+     */
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
 
-    // OkHttp client
+    /**
+     * Proporciona una instancia singleton de OkHttpClient para gestionar las peticiones HTTP.
+     *
+     * @return Instancia de OkHttpClient.
+     */
     @Provides
     @Singleton
     fun provideHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
 
-    // Retrofit for main Aemet API (first request)
+    /**
+     * Proporciona una instancia singleton de Retrofit configurada para la API principal de AEMET.
+     * Esta instancia se utiliza para realizar la primera petición a la API.
+     *
+     * @param okHttpClient Cliente HTTP para Retrofit.
+     * @param gson Conversor Gson para Retrofit.
+     * @return Instancia de AemetApi.
+     */
     @Provides
     @Singleton
     fun provideAemetApi(
@@ -43,7 +62,15 @@ object NetworkModule {
             .create(AemetApi::class.java)
     }
 
-    // Retrofit for dynamic forecast URLs (second request)
+    /**
+     * Proporciona una instancia singleton de Retrofit configurada para consumir URLs dinámicas
+     * que devuelven datos de predicción en bruto (segundas peticiones a URLs proporcionadas).
+     * Utiliza una URL base dummy para permitir @Url dinámico en Retrofit.
+     *
+     * @param okHttpClient Cliente HTTP para Retrofit.
+     * @param gson Conversor Gson para Retrofit.
+     * @return Instancia de AemetRawApi.
+     */
     @Provides
     @Singleton
     fun provideAemetRawApi(

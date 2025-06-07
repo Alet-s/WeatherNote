@@ -19,6 +19,19 @@ import com.alexser.weathernote.domain.model.CondicionMeteorologica
 import com.alexser.weathernote.utils.formatIsoDateAsSpanish
 import com.alexser.weathernote.utils.formatMunicipioName
 
+/**
+ * Componente que muestra una tarjeta con información meteorológica básica para un municipio y fecha concretos.
+ *
+ * Muestra el nombre del municipio, fecha formateada, icono de condición meteorológica, temperaturas máxima y mínima,
+ * y descripción del estado del cielo.
+ *
+ * Además, permite opcionalmente establecer el municipio como principal y eliminarlo, mostrando botones para estas acciones.
+ *
+ * @param report Objeto [BasicWeatherForecast] con los datos a mostrar.
+ * @param modifier Modificador para personalizar el layout.
+ * @param onSetHome Callback opcional para marcar el municipio como principal. Si es null, no se muestra el botón.
+ * @param onDelete Callback opcional para eliminar el municipio. Si es null, no se muestra el botón.
+ */
 @Composable
 fun WeatherCard(
     report: BasicWeatherForecast,
@@ -45,12 +58,18 @@ fun WeatherCard(
                 ) {
                     if (onSetHome != null) {
                         IconButton(onClick = onSetHome) {
-                            Icon(Icons.Default.Home, contentDescription = stringResource(R.string.config_como_principal))
+                            Icon(
+                                Icons.Default.Home,
+                                contentDescription = stringResource(R.string.config_como_principal)
+                            )
                         }
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.eliminar))
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.eliminar)
+                            )
                         }
                     }
                 }

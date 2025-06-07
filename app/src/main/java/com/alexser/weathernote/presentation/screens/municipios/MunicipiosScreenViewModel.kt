@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.alexser.weathernote.data.firebase.MunicipioSyncService
 import com.alexser.weathernote.data.local.HomeMunicipioPreferences
 import com.alexser.weathernote.data.local.SnapshotPreferences
-import com.alexser.weathernote.data.remote.mapper.toHourlyForecastFullItems
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import com.alexser.weathernote.domain.model.DailyForecast
 import com.alexser.weathernote.domain.model.SavedMunicipio
@@ -17,6 +16,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import toHourlyForecastFullItems
 import java.io.InputStreamReader
 import javax.inject.Inject
 

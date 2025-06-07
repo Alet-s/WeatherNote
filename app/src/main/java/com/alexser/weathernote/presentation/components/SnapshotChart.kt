@@ -16,13 +16,26 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 
+/**
+ * Composable que muestra un gráfico de líneas con la evolución de métricas meteorológicas
+ * a partir de una lista de reportes meteorológicos (snapshots).
+ *
+ * Permite seleccionar qué métricas mostrar mediante el mapa [selected], donde la clave es
+ * el nombre de la métrica y el valor un booleano que indica si mostrarla o no.
+ * Además, permite elegir si mostrar los valores crudos o normalizados al rango [0..100].
+ *
+ * @param snapshots Lista de reportes meteorológicos a representar.
+ * @param selected Mapa con las métricas seleccionadas para mostrar (true = mostrar).
+ *                 Las métricas válidas son: "Temperature", "Humidity", "Precipitation", "Wind Speed".
+ * @param showRawValues Booleano que indica si mostrar los valores reales o normalizados.
+ */
 @Composable
 fun SnapshotChart(
     snapshots: List<SnapshotReport>,
     selected: Map<String, Boolean>,
     showRawValues: Boolean,
 
-) {
+    ) {
     val context = LocalContext.current
 
     val metricColors = mapOf(

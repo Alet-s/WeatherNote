@@ -4,6 +4,20 @@ import com.alexser.weathernote.domain.model.SnapshotReport
 import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import java.time.LocalDateTime
 
+/**
+ * Convierte un [HourlyForecastFullItem] en un objeto de dominio [SnapshotReport].
+ *
+ * Esta función transforma los datos meteorológicos por hora en un snapshot completo,
+ * agregando metadatos como el nombre del municipio, su ID, la fecha y una nota opcional del usuario.
+ *
+ * El campo `timestamp` se genera combinando la fecha y la hora del pronóstico en formato ISO 8601.
+ *
+ * @param municipioId ID único del municipio.
+ * @param municipioName Nombre del municipio.
+ * @param date Fecha del pronóstico (en formato ISO, por ejemplo "2025-05-11").
+ * @param userNote Nota opcional del usuario.
+ * @return Instancia de [SnapshotReport] lista para persistencia o visualización.
+ */
 fun HourlyForecastFullItem.toSnapshotReport(
     municipioId: String,
     municipioName: String,
@@ -33,3 +47,4 @@ fun HourlyForecastFullItem.toSnapshotReport(
         userNote = userNote
     )
 }
+
