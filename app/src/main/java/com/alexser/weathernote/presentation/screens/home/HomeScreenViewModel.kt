@@ -21,6 +21,20 @@ import com.alexser.weathernote.domain.usecase.SaveSnapshotReportUseCase
 import toHourlyForecastFullItems
 import toHourlyForecastItems
 
+/**
+ * ViewModel responsable de gestionar el estado y lógica de la pantalla principal (HomeScreen).
+ * Se encarga de obtener predicciones meteorológicas, generar snapshots y manejar preferencias del usuario.
+ *
+ * @property authDataSource Fuente de autenticación para cerrar sesión.
+ * @property getBasicWeatherForecastUseCase Caso de uso para obtener la predicción meteorológica básica.
+ * @property addMunicipioUseCase Caso de uso para añadir un municipio favorito.
+ * @property findMunicipioByNameUseCase Caso de uso para buscar municipios por nombre.
+ * @property getHourlyForecastUseCase Caso de uso para obtener predicciones horarias.
+ * @property generateSnapshotUseCase Caso de uso para generar un SnapshotReport.
+ * @property saveSnapshotReportUseCase Caso de uso para guardar un SnapshotReport en Firestore.
+ * @property homePrefs Preferencias locales del municipio principal.
+ * @property getDailyForecastUseCase Caso de uso para obtener la predicción diaria extendida.
+ */
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val authDataSource: AuthDataSource,
@@ -32,20 +46,23 @@ class HomeScreenViewModel @Inject constructor(
     private val saveSnapshotReportUseCase: SaveSnapshotReportUseCase,
     private val homePrefs: HomeMunicipioPreferences,
     private val getDailyForecastUseCase: GetDailyForecastUseCase,
-    ) : ViewModel() {
+) : ViewModel() {
 
+    /** Estado observable de la pantalla principal. */
     private val _uiState = MutableStateFlow<SnapshotHomeUiState>(SnapshotHomeUiState.Idle)
     val uiState: StateFlow<SnapshotHomeUiState> = _uiState
 
+    /** Flujo para emitir mensajes a un snackbar. */
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage.asSharedFlow()
 
+    /** Flujo de datos con la predicción diaria extendida. */
     private val _dailyForecasts = MutableStateFlow<List<DailyForecast>>(emptyList())
     val dailyForecasts: StateFlow<List<DailyForecast>> = _dailyForecasts
 
 
     init {
-        // Observe changes in home municipio preference
+        // Al iniciar, observa el ID del municipio principal guardad
         viewModelScope.launch {
             homePrefs.homeMunicipioId.collect { id ->
                 if (!id.isNullOrBlank()) {
@@ -57,6 +74,11 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Obtiene la predicción básica, horaria y diaria para el municipio especificado.
+     *
+     * @param municipioId ID del municipio a consultar.
+     */
     fun fetchBWeatherForecast(municipioId: String) {
         viewModelScope.launch {
             _uiState.value = SnapshotHomeUiState.Loading
@@ -67,7 +89,8 @@ class HomeScreenViewModel @Inject constructor(
                 val hourlyDto = getHourlyForecastUseCase(municipioId)
 
                 val hourlyItems = hourlyDto.firstOrNull()?.toHourlyForecastItems() ?: emptyList()
-                val hourlyFullItems = hourlyDto.firstOrNull()?.toHourlyForecastFullItems() ?: emptyList()
+                val hourlyFullItems =
+                    hourlyDto.firstOrNull()?.toHourlyForecastFullItems() ?: emptyList()
 
                 val daily = getDailyForecastUseCase(municipioId)
                 _dailyForecasts.value = daily
@@ -79,12 +102,16 @@ class HomeScreenViewModel @Inject constructor(
                 )
             } else {
                 _uiState.value = SnapshotHomeUiState.Error(
-                    bWeatherForecastResult.exceptionOrNull()?.localizedMessage ?: "Failed to load weather data"
+                    bWeatherForecastResult.exceptionOrNull()?.localizedMessage
+                        ?: "Failed to load weather data"
                 )
             }
         }
     }
 
+    /**
+     * Genera manualmente un SnapshotReport a partir de los datos actuales y lo guarda en Firestore.
+     */
     fun generateSnapshotManually() {
         val state = _uiState.value as? SnapshotHomeUiState.Success ?: return
         val municipioId = state.data.cityId
@@ -104,14 +131,16 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 saveSnapshotReportUseCase(report)
-                _snackbarMessage.emit("Snapshot saved successfully.")
+                _snackbarMessage.emit("Snapshot guardado correctamente.")
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error saving snapshot.")
+                _snackbarMessage.emit("Error Guardando Snapshot.")
             }
         }
     }
 
-
+    /**
+     * Borra el municipio configurado como principal en preferencias locales.
+     */
     fun clearHomeMunicipio() {
         viewModelScope.launch {
             homePrefs.clearHomeMunicipioId()
@@ -119,11 +148,11 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-
-    fun logout() {
-        authDataSource.signOut()
-    }
-
+    /**
+     * Emite un mensaje personalizado al snackbar.
+     *
+     * @param message Texto a mostrar.
+     */
     fun showSnackbar(message: String) {
         viewModelScope.launch {
             _snackbarMessage.emit(message)

@@ -21,6 +21,18 @@ import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 
+/**
+ * Pantalla que muestra la lista de municipios guardados junto con sus snapshots meteorológicos.
+ *
+ * Funcionalidades principales:
+ * - Mostrar una lista de municipios con resumen de snapshots.
+ * - Navegar a la pantalla de snapshots específicos de un municipio.
+ * - Acceso a configuración de snapshots.
+ * - Importar snapshots desde un archivo JSON.
+ *
+ * @param navController Controlador de navegación para gestionar las rutas.
+ * @param viewModel ViewModel que provee la lista de municipios y maneja la lógica de la pantalla.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SnapshotMunicipiosListScreen(
@@ -55,10 +67,14 @@ fun SnapshotMunicipiosListScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 actions = {
                     IconButton(onClick = { navController.navigate("snapshotConfig") }) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.configuracion))
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.configuracion)
+                        )
                     }
                     IconButton(
                         onClick = {
@@ -66,7 +82,10 @@ fun SnapshotMunicipiosListScreen(
                         },
                         modifier = Modifier.padding(10.dp)
                     ) {
-                        Icon(painterResource(R.drawable.wi_cloud_up), contentDescription = stringResource(R.string.exportar_snaps))
+                        Icon(
+                            painterResource(R.drawable.wi_cloud_up),
+                            contentDescription = stringResource(R.string.exportar_snaps)
+                        )
                     }
                 }
             )

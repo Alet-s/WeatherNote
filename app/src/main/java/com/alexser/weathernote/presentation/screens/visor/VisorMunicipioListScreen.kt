@@ -13,9 +13,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.R
-import com.alexser.weathernote.domain.model.SavedMunicipio
 import com.alexser.weathernote.presentation.screens.municipios.MunicipiosScreenViewModel
 
+/**
+ * Pantalla que muestra una lista de municipios guardados.
+ * El usuario puede seleccionar un municipio para navegar a la pantalla
+ * donde podrá visualizar gráficas basadas en los datos del municipio.
+ *
+ * @param navController Controlador de navegación para cambiar de pantalla.
+ * @param viewModel ViewModel que provee los datos de municipios.
+ */
 @Composable
 fun VisorMunicipioListScreen(
     navController: NavController,

@@ -54,7 +54,7 @@
     <string name="cerrar">Cerrar</string>
     <string name="cargando_prediccion">Cargando predicción</string>
     <string name="porfavor_espera_prediccion">Por favor, espera mientras recuperamos los datos de la predicción</string>
-    <string name="borrar_tambien_snaps">Deseas eliminar los snapshots asociados a este municipio?</string>
+    <string name="borrar_tambien_snaps">¿Deseas eliminar los snapshots asociados a este municipio?</string>
     <string name="borrar_con_snaps">Borrar con snapshots</string>
     <string name="mantener_snapshots">Mantener snapshots</string>
     <string name="crear_cuenta">Crear Cuenta</string>

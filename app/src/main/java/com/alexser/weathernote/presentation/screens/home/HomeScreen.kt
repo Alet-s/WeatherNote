@@ -24,6 +24,15 @@ import com.alexser.weathernote.data.remote.model.HourlyForecastFullItem
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalTime
 
+/**
+ * Composable que representa la pantalla principal (HomeScreen) donde se muestra la
+ * información meteorológica del municipio favorito.
+ *
+ * @param viewModel ViewModel que gestiona el estado de esta pantalla.
+ * @param onLogout Callback que se ejecuta cuando el usuario desea cerrar sesión.
+ * @param onRequestAddFavorite Callback que se ejecuta cuando el usuario quiere agregar
+ * un municipio a favoritos desde la pantalla principal.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -55,6 +64,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
                 .padding(16.dp)
         ) {
             when (uiState) {

@@ -20,6 +20,18 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+/**
+ * ViewModel para la pantalla que gestiona los snapshots meteorológicos de un municipio.
+ *
+ * Se encarga de cargar, generar, eliminar, exportar y actualizar notas de los SnapshotReports.
+ *
+ * @property getSnapshotReportsByMunicipio Caso de uso para obtener snapshots de un municipio.
+ * @property getHourlyForecastUseCase Caso de uso para obtener la predicción horaria.
+ * @property saveSnapshotReportUseCase Caso de uso para guardar un snapshot.
+ * @property deleteSnapshotReportUseCase Caso de uso para eliminar un snapshot individual.
+ * @property deleteBatchSnapshotsUseCase Caso de uso para eliminar múltiples snapshots.
+ * @property getSnapshotByReportIdUseCase Caso de uso para obtener un snapshot por su ID de reporte.
+ */
 @HiltViewModel
 class SnapshotMunicipioViewModel @Inject constructor(
     private val getSnapshotReportsByMunicipio: GetSnapshotReportsByMunicipioUseCase,
@@ -30,9 +42,16 @@ class SnapshotMunicipioViewModel @Inject constructor(
     private val getSnapshotByReportIdUseCase: GetSnapshotByReportIdUseCase
 ) : ViewModel() {
 
+    /** Estado UI observable que contiene datos actuales del municipio y sus snapshots */
     private val _uiState = MutableStateFlow(SnapshotMunicipioUiState())
     val uiState: StateFlow<SnapshotMunicipioUiState> = _uiState
 
+    /**
+     * Carga los snapshots asociados a un municipio dado.
+     *
+     * @param municipioId ID único del municipio.
+     * @param municipioName Nombre del municipio.
+     */
     fun loadSnapshotData(municipioId: String, municipioName: String) {
         viewModelScope.launch {
             val snapshots = getSnapshotReportsByMunicipio(municipioId)
@@ -44,6 +63,11 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Genera manualmente un snapshot actual basado en la predicción horaria para el municipio actual.
+     *
+     * @param municipio El municipio guardado para el que se genera el snapshot.
+     */
     fun generateSnapshotManually(municipioId: SavedMunicipio) {
         val id = _uiState.value.municipioId ?: return
         val name = _uiState.value.municipioName ?: "Desconocido"
@@ -73,6 +97,12 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Elimina un snapshot específico y actualiza la lista de snapshots en UI.
+     *
+     * @param snapshot SnapshotReport a eliminar.
+     */
+
     fun deleteSnapshot(snapshot: SnapshotReport) {
         viewModelScope.launch {
             try {
@@ -85,11 +115,17 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Elimina múltiples snapshots en lote y actualiza la UI.
+     *
+     * @param snapshots Lista de SnapshotReport a eliminar.
+     */
     fun deleteSnapshotsInBatch(snapshots: List<SnapshotReport>) {
         viewModelScope.launch {
             try {
                 deleteBatchSnapshotsUseCase(snapshots)
-                val updated = getSnapshotReportsByMunicipio(_uiState.value.municipioId ?: return@launch)
+                val updated =
+                    getSnapshotReportsByMunicipio(_uiState.value.municipioId ?: return@launch)
                 _uiState.value = _uiState.value.copy(snapshots = updated)
             } catch (e: Exception) {
                 Log.e("SNAPSHOT_DELETE_BATCH", "❌ Error deleting batch: ${e.message}")
@@ -97,6 +133,13 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Exporta snapshots seleccionados a un archivo JSON en la URI proporcionada.
+     *
+     * @param context Contexto para acceder al ContentResolver.
+     * @param uri URI destino para guardar el archivo JSON.
+     * @param reportIds Lista de IDs de los snapshots a exportar.
+     */
     fun saveSnapshotJsonToUri(context: Context, uri: Uri, reportIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -118,6 +161,12 @@ class SnapshotMunicipioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Actualiza la nota de usuario asociada a un snapshot y refresca la UI.
+     *
+     * @param reportId ID del snapshot a actualizar.
+     * @param newNote Nuevo texto de la nota a guardar.
+     */
     fun updateNoteForSnapshot(reportId: String, newNote: String) {
         viewModelScope.launch {
             try {

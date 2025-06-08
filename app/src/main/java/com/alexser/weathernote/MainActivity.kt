@@ -51,7 +51,8 @@ class MainActivity : ComponentActivity() {
                         topBar = {
                             TopAppBar(
                                 colors = TopAppBarDefaults.topAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.background),
+                                    containerColor = MaterialTheme.colorScheme.background
+                                ),
                                 title = {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -75,7 +76,8 @@ class MainActivity : ComponentActivity() {
 
                                         Spacer(modifier = Modifier.width(12.dp))
 
-                                        val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
+                                        val email =
+                                            FirebaseAuth.getInstance().currentUser?.email ?: ""
                                         if (email.isNotEmpty()) {
                                             Text(
                                                 text = email,
@@ -101,8 +103,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             )
-                        }
-,
+                        },
                         bottomBar = {
                             BottomNavigationBar(
                                 currentRoute = currentRoute,

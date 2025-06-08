@@ -16,6 +16,12 @@ import com.alexser.weathernote.presentation.components.SnapshotChart
 import com.alexser.weathernote.presentation.components.SnapshotRangeSelector
 import com.alexser.weathernote.presentation.screens.snapshot.SnapshotMunicipioViewModel
 
+/**
+ * Pantalla para visualizar gráficas basadas en los snapshots meteorológicos de un municipio.
+ *
+ * @param municipio Municipio seleccionado cuyos datos se mostrarán.
+ * @param viewModel ViewModel que gestiona la lógica y datos de snapshots.
+ */
 @Composable
 fun VisorScreen(
     municipio: SavedMunicipio,
@@ -48,7 +54,10 @@ fun VisorScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("${municipio.nombre} - ${stringResource(R.string.visualizacion_datos)}", style = MaterialTheme.typography.titleLarge)
+        Text(
+            "${municipio.nombre} - ${stringResource(R.string.visualizacion_datos)}",
+            style = MaterialTheme.typography.titleLarge
+        )
 
         MetricsCheckboxes(selectedMetrics)
 

@@ -15,6 +15,18 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel para la pantalla de configuración de retención de snapshots.
+ *
+ * Gestiona el estado de la opción de retención seleccionada,
+ * la lista de municipios guardados y qué municipios han sido seleccionados para aplicar la retención.
+ *
+ * Además, permite guardar la configuración en preferencias y forzar la limpieza de snapshots antiguos.
+ *
+ * @property application Contexto de aplicación para acceso a preferencias y recursos.
+ * @property snapshotRepository Repositorio para manejar snapshots meteorológicos.
+ * @property municipioRepository Repositorio para obtener municipios guardados.
+ */
 @HiltViewModel
 class SnapshotConfigScreenViewModel @Inject constructor(
     application: Application,
@@ -40,16 +52,31 @@ class SnapshotConfigScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Actualiza la opción de retención seleccionada.
+     *
+     * @param option Nueva opción seleccionada.
+     */
     fun onOptionSelected(option: SnapshotRetentionOption) {
         _selectedOption.value = option
     }
 
+    /**
+     * Alterna la selección de un municipio dado su ID.
+     * Si ya estaba seleccionado, se deselecciona; si no, se añade a la selección.
+     *
+     * @param id ID del municipio a alternar.
+     */
     fun toggleMunicipio(id: String) {
         _selectedMunicipioIds.value = _selectedMunicipioIds.value.toMutableSet().also { set ->
             if (set.contains(id)) set.remove(id) else set.add(id)
         }
     }
 
+    /**
+     * Guarda la opción de retención actualmente seleccionada
+     * en las preferencias para cada municipio seleccionado.
+     */
     fun saveOptionToSelectedMunicipios() {
         val option = _selectedOption.value
         _selectedMunicipioIds.value.forEach { municipioId ->
@@ -57,6 +84,11 @@ class SnapshotConfigScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Forza la limpieza de snapshots antiguos que ya no cumplen con las políticas de retención.
+     *
+     * Esta operación se realiza en un dispatcher IO.
+     */
     fun enforceCleanup() {
         viewModelScope.launch(Dispatchers.IO) {
             SnapshotCleanupManager(getApplication(), snapshotRepository).runCleanupIfNeeded()

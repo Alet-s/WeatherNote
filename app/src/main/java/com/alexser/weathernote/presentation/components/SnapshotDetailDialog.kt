@@ -32,7 +32,7 @@ fun SnapshotDetailDialog(
                 Text("Close")
             }
         },
-        title = { Text("Snapshot Details") },
+        title = { Text("Detalles de Snapshot") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),

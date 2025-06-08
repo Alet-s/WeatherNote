@@ -1,15 +1,9 @@
 package com.alexser.weathernote.presentation.screens.snapshot
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -26,8 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alexser.weathernote.R
@@ -38,6 +30,19 @@ import com.alexser.weathernote.presentation.components.SnapshotReportItem
 import com.alexser.weathernote.presentation.components.SnapshotDetailDialog
 import kotlinx.coroutines.launch
 
+/**
+ * Pantalla que muestra los snapshots meteorológicos de un municipio guardado.
+ *
+ * Permite:
+ * - Visualizar una lista de snapshots con un selector de rango para filtrar.
+ * - Selección múltiple de snapshots para eliminar o exportar a JSON.
+ * - Ver detalles y añadir notas a snapshots individuales.
+ * - Generar manualmente un nuevo snapshot con el botón flotante.
+ *
+ * @param municipio El municipio cuyo historial de snapshots se va a mostrar.
+ * @param navController Controlador de navegación para gestionar el back stack.
+ * @param viewModel ViewModel que gestiona la lógica y estado de la pantalla.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SnapshotMunicipioScreen(
@@ -118,10 +123,14 @@ fun SnapshotMunicipioScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.volver)
+                        )
                     }
                 }
             )
@@ -178,7 +187,9 @@ fun SnapshotMunicipioScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                val toDelete = snapshotsToShow.filterIndexed { idx, snapshot -> selectedIndexes.contains(idx) }
+                                val toDelete = snapshotsToShow.filterIndexed { idx, snapshot ->
+                                    selectedIndexes.contains(idx)
+                                }
                                 viewModel.deleteSnapshotsInBatch(toDelete)
                                 selectedIndexes.clear()
                                 coroutineScope.launch {
@@ -196,7 +207,8 @@ fun SnapshotMunicipioScreen(
 
                         IconButton(
                             onClick = {
-                                val suggestedName = "WeatherSnapshots_${System.currentTimeMillis()}.json"
+                                val suggestedName =
+                                    "WeatherSnapshots_${System.currentTimeMillis()}.json"
                                 createDocumentLauncher.launch(suggestedName)
                             },
                             modifier = Modifier.size(48.dp)

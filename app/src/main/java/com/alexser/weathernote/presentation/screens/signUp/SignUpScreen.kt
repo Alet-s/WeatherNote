@@ -1,22 +1,35 @@
 package com.alexser.weathernote.presentation.screens.signUp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 
+/**
+ * Composable que muestra la pantalla de registro de usuario.
+ *
+ * Presenta un formulario con campos para email, contraseña y confirmación de contraseña,
+ * así como un botón para registrarse. También muestra estados de carga y errores
+ * proporcionados por el ViewModel.
+ *
+ * @param viewModel Instancia de [SignupViewModel] que maneja la lógica y el estado de la pantalla.
+ * @param onSignupSuccess Lambda que se ejecuta cuando el registro se realiza con éxito,
+ *                        normalmente para navegar a otra pantalla.
+ */
 @Composable
 fun SignupScreen(
     viewModel: SignupViewModel,
     onSignupSuccess: () -> Unit
 ) {
-
     LaunchedEffect(Unit) {
         viewModel.resetState()
     }
@@ -27,8 +40,19 @@ fun SignupScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Image(
+            painter = painterResource(id = R.drawable.main_logo),
+            contentDescription = stringResource(R.string.app_name),
+            modifier = Modifier
+                .height(220.dp)
+                .padding(bottom = 32.dp),
+            contentScale = ContentScale.Fit
+        )
+
         Text(
             text = stringResource(R.string.crear_cuenta),
             style = MaterialTheme.typography.headlineMedium,
@@ -81,9 +105,11 @@ fun SignupScreen(
         }
 
         if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier
-                .padding(top = 24.dp)
-                .align(Alignment.CenterHorizontally))
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(top = 24.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
         }
     }
 }

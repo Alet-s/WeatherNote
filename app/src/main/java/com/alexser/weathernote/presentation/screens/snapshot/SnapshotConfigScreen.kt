@@ -3,13 +3,10 @@ package com.alexser.weathernote.presentation.screens.snapshot
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +16,18 @@ import com.alexser.weathernote.domain.model.SnapshotRetentionOption
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+/**
+ * Pantalla para configurar las opciones de retención de snapshots meteorológicos.
+ *
+ * Permite al usuario seleccionar cuánto tiempo desea conservar los snapshots,
+ * eligiendo entre varias opciones predefinidas (por ejemplo, mantener los últimos 15, 31 días, etc.).
+ *
+ * También permite seleccionar para qué municipios aplicar dicha política de retención.
+ * Incluye botones para guardar la configuración o forzar la limpieza de snapshots antiguos.
+ *
+ * @param navController Controlador de navegación para manejar la navegación entre pantallas.
+ * @param viewModel ViewModel que gestiona el estado y lógica de la pantalla, con inyección Hilt por defecto.
+ */
 @Composable
 fun SnapshotConfigScreen(
     navController: NavController,
@@ -118,5 +127,9 @@ fun SnapshotConfigScreen(
         }
 
         Spacer(modifier = Modifier.padding(3.dp))
+    }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        SnackbarHost(hostState = snackbarHostState)
     }
 }

@@ -1,5 +1,6 @@
 package com.alexser.weathernote.presentation.screens.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 
+/**
+ * Pantalla de recuperación de contraseña donde el usuario puede introducir su correo
+ * electrónico para recibir un enlace de restablecimiento.
+ *
+ * @param viewModel ViewModel asociado que gestiona el estado y lógica de la recuperación.
+ * @param onBackToLogin Callback que se ejecuta cuando el usuario quiere volver a la pantalla de login.
+ */
 @Composable
 fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel,
@@ -38,7 +48,21 @@ fun ForgotPasswordScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(stringResource(R.string.recuperar_pass), style = MaterialTheme.typography.headlineMedium)
+        // Icono de la app
+        Image(
+            painter = painterResource(id = R.drawable.main_logo),
+            contentDescription = stringResource(R.string.app_name),
+            modifier = Modifier
+                .height(260.dp)
+                .padding(bottom = 32.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Text(
+            stringResource(R.string.recuperar_pass),
+            style = MaterialTheme.typography.headlineMedium
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(

@@ -15,6 +15,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.alexser.weathernote.R
 
+/**
+ * Pantalla que informa al usuario que se ha enviado un correo electrónico de verificación.
+ *
+ * Muestra un mensaje instructivo y un botón para continuar una vez que el usuario
+ * haya confirmado su correo.
+ *
+ * @param onContinue Lambda que se ejecuta cuando el usuario pulsa el botón "Continuar".
+ */
 @Composable
 fun VerifyEmailScreen(
     onContinue: () -> Unit

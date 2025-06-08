@@ -16,6 +16,15 @@ import com.alexser.weathernote.presentation.screens.signUp.SignupViewModel
 import com.alexser.weathernote.presentation.screens.signUp.VerifyEmailScreen
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Composable que define la navegación dentro del flujo de autenticación.
+ *
+ * Esta función configura un `NavHost` con rutas para login, registro, recuperación de contraseña
+ * y verificación de correo electrónico.
+ *
+ * @param navController Controlador de navegación para manejar las rutas dentro del flujo de autenticación.
+ * @param onAuthenticated Callback que se ejecuta cuando el usuario ha sido autenticado con éxito.
+ */
 @Composable
 fun AuthNavHost(
     navController: NavHostController,
@@ -32,7 +41,7 @@ fun AuthNavHost(
             LoginScreen(
                 viewModel = viewModel,
                 onLoginSuccess = {
-                    onAuthenticated() // ✅ triggers recomposition in MainActivity
+                    onAuthenticated()
                 },
                 onNavigateToSignup = {
                     navController.navigate("signup")
@@ -70,7 +79,7 @@ fun AuthNavHost(
                     user?.reload()?.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             if (user.isEmailVerified) {
-                                onAuthenticated() // ✅ triggers graph switch
+                                onAuthenticated()
                             } else {
                                 Toast.makeText(
                                     context,

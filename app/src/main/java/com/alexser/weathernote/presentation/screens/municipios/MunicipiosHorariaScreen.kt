@@ -20,13 +20,26 @@ import com.alexser.weathernote.R
 import com.alexser.weathernote.presentation.components.HourlyForecastRow
 import com.alexser.weathernote.utils.formatMunicipioName
 
+/**
+ * Pantalla que muestra la predicción horaria de los municipios disponibles.
+ *
+ * Permite seleccionar un municipio para ver su predicción horaria,
+ * mostrando una lista de intervalos horarios con la información del clima.
+ *
+ * @param viewModel ViewModel que provee los datos de municipios y predicciones horarias.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MunicipiosHorariaScreen(
     viewModel: MunicipiosHorariaScreenViewModel = hiltViewModel()
 ) {
+    /**Estado con la lista de municipios obtenida del ViewModel*/
     val municipios by viewModel.municipios.collectAsState()
+
+    /**Estado con el mapa de predicciones horarias por municipio*/
     val hourlyForecasts by viewModel.hourlyForecasts.collectAsState()
+
+    /**Carga inicial de datos cuando el Composable entra en composición*/
     var selectedMunicipioId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
